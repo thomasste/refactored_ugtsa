@@ -1,4 +1,3 @@
-import tensorflow as tf
 import numpy as np
 from model_builders import model_builder
 from model_builders.common.neural_networks import *
@@ -38,8 +37,10 @@ class BasicModelBuilder(model_builder.ModelBuilder):
         print(signal.get_shape())
 
         signal = convolutional_neural_network(
+            training,
             self.statistic_filter_shapes,
-            self.statistic_window_shapes, signal)
+            self.statistic_window_shapes,
+            signal)
 
         signal = tf.reshape(
             signal, (-1, np.prod(signal.get_shape().as_list()[1:])))
@@ -63,30 +64,33 @@ class BasicModelBuilder(model_builder.ModelBuilder):
             self, rng, training, statistic, updates_count, updates):
         max_i = tf.reduce_max(updates_count)
 
-        def cond(i):
+        def cond(i, cs, hs, updates):
             return i < max_i
 
         def body(i, cs, hs, updates):
-            input = updates[:i * self.update_size:(i+1) * self.update_size]
+            input = tf.reshape(
+                updates[:, i * self.update_size:(i+1) * self.update_size],
+                (-1, self.update_size))
 
             ncs = []
             nhs = []
 
-            for i, (state_size, c, h) in enumerate(
+            for layer_idx, (state_size, c, h) in enumerate(
                     zip(self.modified_statistic_lstm_state_sizes, cs, hs)):
-                with tf.variable_scope('lstm_layer_{}'.format(i)):
+                with tf.variable_scope('lstm_layer_{}'.format(layer_idx)):
                     cell = tf.contrib.rnn.LSTMCell(state_size)
+                    print(input.get_shape(), c, h)
                     input, lstm_state = cell(input, [c, h])
-                    ncs += [lstm_state.c]
-                    nhs += [lstm_state.h]
+                    ncs += [tf.where(updates_count > i, lstm_state.c, c)]
+                    nhs += [tf.where(updates_count > i, lstm_state.h, h)]
 
-            return [i+1, ncs, nhs, updates]
+            return [i + 1, ncs, nhs, updates]
 
         split = tf.split(statistic, self.modified_statistic_lstm_state_sizes * 2, 1)
         cs0 = split[:len(self.modified_statistic_lstm_state_sizes)]  # c
         hs0 = split[len(self.modified_statistic_lstm_state_sizes):]  # h
 
-        _, ncs, nhs, _ = tf.while_loop(cond, body, loop_vars=[0, cs0, hs0, updates])
+        _, ncs, nhs, _ = tf.while_loop(cond, body, loop_vars=[tf.constant(0), cs0, hs0, updates])
 
         return tf.concat(ncs + nhs, axis=1)
 
@@ -104,7 +108,7 @@ class BasicModelBuilder(model_builder.ModelBuilder):
         print(signal.get_shape())
         signal = dense_neural_network(
             rng, training, 0.5, self.move_rate_hidden_output_sizes, signal)
-        signal = dense_layer(signal, self.player_count)
+        signal = dense_layer(self.player_count, signal)
         signal = bias_layer(signal)
         print(signal.get_shape())
         return signal
