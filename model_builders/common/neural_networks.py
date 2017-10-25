@@ -68,7 +68,8 @@ def max_pool_layer(signal, window_shape):
         signal, ksize=window_shape, strides=window_shape, padding='SAME')
 
 
-def convolutional_neural_network(training, filter_shapes, window_shapes, signal):
+def convolutional_neural_network(
+        training, filter_shapes, window_shapes, signal):
     for idx, (filter_shape, window_shape) in enumerate(
             zip(filter_shapes, window_shapes)):
         with tf.variable_scope('convolutional_layer_{}'.format(idx)):

@@ -35,14 +35,17 @@ def test_batch_normalization(session, output, feed_dict, training):
     assert_unequal(o0, o3)
 
 
-def test_preserving_batch_normalization_state(session, output, feed_dict, training, collected_untrainable_variables, set_untrainable_variables, set_untrainable_variables_input):
+def test_preserving_batch_normalization_state(
+        session, output, feed_dict, training, collected_untrainable_variables,
+        set_untrainable_variables, set_untrainable_variables_input):
     s0 = session.run(collected_untrainable_variables)
     o0 = session.run(output, {**feed_dict, training: False})
     s1 = session.run(collected_untrainable_variables)
     o1 = session.run(output, {**feed_dict, training: True})
     s2 = session.run(collected_untrainable_variables)
     o2 = session.run(output, {**feed_dict, training: False})
-    session.run(set_untrainable_variables, {set_untrainable_variables_input: s0})
+    session.run(
+        set_untrainable_variables, {set_untrainable_variables_input: s0})
     s3 = session.run(collected_untrainable_variables)
     o3 = session.run(output, {**feed_dict, training: False})
 
@@ -54,17 +57,26 @@ def test_preserving_batch_normalization_state(session, output, feed_dict, traini
     assert_equal(o0, o3)
 
 
-def test_input_gradients(session, feed_dict, output_gradient, output_shape, input_gradients, training):
-    os = session.run(input_gradients, {**feed_dict, output_gradient: np.ones(output_shape), training: True})
+def test_input_gradients(
+        session, feed_dict, output_gradient, output_shape, input_gradients,
+        training):
+    os = session.run(
+        input_gradients,
+        {**feed_dict, output_gradient: np.ones(output_shape), training: True})
 
     for o in os:
         assert_nonzero(o)
 
 
-def test_gradient_accumulators(session, feed_dict, output_gradient, output_shape, training, gradient_accumulators, update_gradient_accumulators, zero_gradient_accumulators):
+def test_gradient_accumulators(
+        session, feed_dict, output_gradient, output_shape, training,
+        gradient_accumulators, update_gradient_accumulators,
+        zero_gradient_accumulators):
     session.run(zero_gradient_accumulators)
     ga0 = session.run(gradient_accumulators)
-    session.run(update_gradient_accumulators, {**feed_dict, training: True, output_gradient: np.ones(output_shape)})
+    session.run(
+        update_gradient_accumulators,
+        {**feed_dict, training: True, output_gradient: np.ones(output_shape)})
     ga1 = session.run(gradient_accumulators)
     session.run(zero_gradient_accumulators)
     ga2 = session.run(gradient_accumulators)
@@ -73,7 +85,6 @@ def test_gradient_accumulators(session, feed_dict, output_gradient, output_shape
         assert_zero(ga)
 
     for ga in ga1:
-        print(np.any(ga))
         assert_nonzero(ga)
 
     for ga in ga2:

@@ -86,11 +86,13 @@ class BasicModelBuilder(ModelBuilder):
 
             return [i + 1, ncs, nhs, updates]
 
-        split = tf.split(statistic, self.modified_statistic_lstm_state_sizes * 2, 1)
+        split = tf.split(
+            statistic, self.modified_statistic_lstm_state_sizes * 2, 1)
         cs0 = split[:len(self.modified_statistic_lstm_state_sizes)]  # c
         hs0 = split[len(self.modified_statistic_lstm_state_sizes):]  # h
 
-        _, ncs, nhs, _ = tf.while_loop(cond, body, loop_vars=[tf.constant(0), cs0, hs0, updates])
+        _, ncs, nhs, _ = tf.while_loop(
+            cond, body, loop_vars=[tf.constant(0), cs0, hs0, updates])
 
         return tf.concat(ncs + nhs, axis=1)
 
@@ -115,7 +117,8 @@ class BasicModelBuilder(ModelBuilder):
 
     def cost_function(self, rng, training, logits, labels):
         return tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=tf.nn.softmax(labels)))
+            tf.nn.softmax_cross_entropy_with_logits(
+                logits=logits, labels=tf.nn.softmax(labels)))
 
     def apply_gradients(self, global_step, grads_and_vars):
         return tf.train.AdamOptimizer().apply_gradients(

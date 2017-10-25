@@ -76,7 +76,8 @@ class ModelBuilder:
 
             for trainable_variable in trainable_variables:
                 tf.add_to_collection(
-                    '{}/test_info_trainable_variables'.format(variable_scope.name),
+                    '{}/test_info_trainable_variables'.format(
+                        variable_scope.name),
                     trainable_variable)
 
             for gradient in gradients:
@@ -113,11 +114,13 @@ class ModelBuilder:
                 for input in inputs if input['trainable']]
 
             gradients = tf.gradients(
-                output, [x[1] for x in trainable_placeholders], output_gradient)
+                output, [x[1] for x in trainable_placeholders],
+                output_gradient)
 
             print(gradients)
 
-            for (input_name, _), gradient in zip(trainable_placeholders, gradients):
+            for (input_name, _), gradient in zip(
+                    trainable_placeholders, gradients):
                 tf.identity(gradient, '{}_gradient'.format(input_name))
 
     def build(self):
@@ -365,7 +368,8 @@ class ModelBuilder:
         for key, value in methods.items():
             self.build_graph(key, value['inputs'], value['output'])
 
-        # getter and setter of untrainable variables - used for preserving moving averages
+        # getter and setter of untrainable variables
+        #  - used for preserving moving averages
         untrainable_variables = [
             variable
             for key in methods
@@ -404,7 +408,8 @@ class ModelBuilder:
             tf.no_op('set_untrainable_variables')
 
         # build apply gradients graph
-        # ! Adam creates untrainable variables -> needs to be run as last command
+        # ! Adam creates untrainable variables ->
+        # needs to be run as last command
         global_step = tf.Variable(
             initial_value=0, trainable=False, dtype=tf.int32,
             name='global_step')
