@@ -249,13 +249,13 @@ with tf.Session() as session:
     test_output(
         session, modified_update_output, modified_update_feed_dict,
         modified_update_training)
-    test_batch_normalization(
-        session, modified_update_output, modified_update_feed_dict,
-        modified_update_training)
-    test_preserving_batch_normalization_state(
-        session, modified_update_output, modified_update_feed_dict,
-        modified_update_training, collected_untrainable_variables,
-        set_untrainable_variables, set_untrainable_variables_input)
+    # test_batch_normalization(
+    #     session, modified_update_output, modified_update_feed_dict,
+    #     modified_update_training)
+    # test_preserving_batch_normalization_state(
+    #     session, modified_update_output, modified_update_feed_dict,
+    #     modified_update_training, collected_untrainable_variables,
+    #     set_untrainable_variables, set_untrainable_variables_input)
     test_input_gradients(
         session, modified_update_feed_dict, modified_update_output_gradient,
         [2, 150], modified_update_input_gradients, modified_update_training)

@@ -1,6 +1,7 @@
 import numpy as np
 from model_builders.common.neural_networks import *
 from model_builders.model_builder import ModelBuilder
+from tensorflow.contrib.layers import layer_norm
 
 
 class BasicModelBuilder(ModelBuilder):
@@ -49,13 +50,13 @@ class BasicModelBuilder(ModelBuilder):
         signal = tf.concat([signal, game_state_info], axis=1)
         print(signal.get_shape())
 
-        return dense_neural_network(
+        return dense_neural_network_with_batch_normalization(
             rng, training, 0.5,
             self.statistic_hidden_output_sizes + [self.statistic_size],
             signal)
 
     def update(self, rng, training, payoff):
-        return dense_neural_network(
+        return dense_neural_network_with_batch_normalization(
             rng, training, 0.5,
             self.update_hidden_output_sizes + [self.update_size],
             payoff)
@@ -81,8 +82,10 @@ class BasicModelBuilder(ModelBuilder):
                     cell = tf.contrib.rnn.LSTMCell(state_size)
                     print(input.get_shape(), c, h)
                     input, lstm_state = cell(input, [c, h])
-                    ncs += [tf.where(updates_count > i, lstm_state.c, c)]
-                    nhs += [tf.where(updates_count > i, lstm_state.h, h)]
+                    ncs += [tf.where(
+                        updates_count > i, layer_norm(lstm_state.c), c)]
+                    nhs += [tf.where(
+                        updates_count > i, layer_norm(lstm_state.h), h)]
 
             return [i + 1, ncs, nhs, updates]
 
@@ -99,7 +102,7 @@ class BasicModelBuilder(ModelBuilder):
     def modified_update(self, rng, training, update, statistic):
         signal = tf.concat([update, statistic], axis=1)
         print(signal.get_shape())
-        return dense_neural_network(
+        return dense_neural_network_with_layer_norm(
             rng, training, 0.5,
             self.modified_update_hidden_output_sizes + [self.update_size],
             signal)
@@ -108,7 +111,7 @@ class BasicModelBuilder(ModelBuilder):
     def move_rate(self, rng, training, parent_statistic, child_statistic):
         signal = tf.concat([parent_statistic, child_statistic], axis=1)
         print(signal.get_shape())
-        signal = dense_neural_network(
+        signal = dense_neural_network_with_batch_normalization(
             rng, training, 0.5, self.move_rate_hidden_output_sizes, signal)
         signal = dense_layer(self.player_count, signal)
         signal = bias_layer(signal)
