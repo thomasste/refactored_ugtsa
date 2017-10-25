@@ -1,9 +1,9 @@
 import numpy as np
-from model_builders import model_builder
 from model_builders.common.neural_networks import *
+from model_builders.model_builder import ModelBuilder
 
 
-class BasicModelBuilder(model_builder.ModelBuilder):
+class BasicModelBuilder(ModelBuilder):
     def __init__(self, statistic_size, update_size,
                  board_shape, game_state_info_size,
                  payoff_size, player_count, worker_count,
