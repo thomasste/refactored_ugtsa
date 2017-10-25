@@ -74,17 +74,6 @@ class ModelBuilder:
             gradients = tf.gradients(
                 output, trainable_variables, output_gradient)
 
-            for trainable_variable in trainable_variables:
-                tf.add_to_collection(
-                    '{}/test_info_trainable_variables'.format(
-                        variable_scope.name),
-                    trainable_variable)
-
-            for gradient in gradients:
-                tf.add_to_collection(
-                    '{}/test_info_gradients'.format(variable_scope.name),
-                    gradient)
-
             gradient_accumulators = [
                 tf.Variable(
                     tf.zeros(gradient.get_shape(), gradient.dtype),
@@ -116,8 +105,6 @@ class ModelBuilder:
             gradients = tf.gradients(
                 output, [x[1] for x in trainable_placeholders],
                 output_gradient)
-
-            print(gradients)
 
             for (input_name, _), gradient in zip(
                     trainable_placeholders, gradients):
@@ -407,9 +394,8 @@ class ModelBuilder:
         with tf.control_dependencies(set_untrainable_variables):
             tf.no_op('set_untrainable_variables')
 
-        # build apply gradients graph
-        # ! Adam creates untrainable variables ->
-        # needs to be run as last command
+        # apply gradients
+        # ! optimizer might create untrainable variables
         global_step = tf.Variable(
             initial_value=0, trainable=False, dtype=tf.int32,
             name='global_step')

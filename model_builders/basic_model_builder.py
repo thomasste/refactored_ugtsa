@@ -80,7 +80,7 @@ class BasicModelBuilder(ModelBuilder):
                     zip(self.modified_statistic_lstm_state_sizes, cs, hs)):
                 with tf.variable_scope('lstm_layer_{}'.format(layer_idx)):
                     cell = tf.contrib.rnn.LSTMCell(state_size)
-                    print(input.get_shape(), c, h)
+                    print(input.get_shape(), c.get_shape(), h.get_shape())
                     input, lstm_state = cell(input, [c, h])
                     ncs += [tf.where(
                         updates_count > i, layer_norm(lstm_state.c), c)]
@@ -107,7 +107,6 @@ class BasicModelBuilder(ModelBuilder):
             self.modified_update_hidden_output_sizes + [self.update_size],
             signal)
 
-    # ! trzeba aplikować softmax przed użyciem
     def move_rate(self, rng, training, parent_statistic, child_statistic):
         signal = tf.concat([parent_statistic, child_statistic], axis=1)
         print(signal.get_shape())
@@ -120,8 +119,8 @@ class BasicModelBuilder(ModelBuilder):
 
     def cost_function(self, rng, training, logits, labels):
         return tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits(
-                logits=logits, labels=tf.nn.softmax(labels)))
+            tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=logits, labels=tf.nn.sigmoid(labels)))
 
     def apply_gradients(self, global_step, grads_and_vars):
         return tf.train.AdamOptimizer().apply_gradients(

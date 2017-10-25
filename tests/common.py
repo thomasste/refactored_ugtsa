@@ -85,6 +85,8 @@ def test_gradient_accumulators(
         assert_zero(ga)
 
     for ga in ga1:
+        if not np.any(ga):
+            print(ga)
         assert_nonzero(ga)
 
     for ga in ga2:

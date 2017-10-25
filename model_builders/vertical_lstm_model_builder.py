@@ -42,7 +42,7 @@ class VerticalLSTMModelBuilder(ModelBuilder):
                 zip(self.modified_update_lstm_state_sizes, cs, hs)):
             with tf.variable_scope('lstm_layer_{}'.format(layer_idx)):
                 cell = tf.contrib.rnn.LSTMCell(state_size)
-                print(input.get_shape(), c, h)
+                print(input.get_shape(), c.get_shape(), h.get_shape())
                 input, lstm_state = cell(input, [c, h])
                 ncs += [layer_norm(lstm_state.c)]
                 nhs += [layer_norm(lstm_state.h)]

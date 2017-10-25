@@ -186,6 +186,34 @@ move_rate_feed_dict = {
         [[(x + j) % 3 for x in range(150)] for j in range(2)],
 }
 
+# cost_function
+cost_function_seed = graph.get_tensor_by_name('cost_function/seed:0')
+cost_function_training = graph.get_tensor_by_name('cost_function/training:0')
+cost_function_logits = graph.get_tensor_by_name('cost_function/logits:0')
+cost_function_labels = graph.get_tensor_by_name('cost_function/labels:0')
+
+cost_function_input_gradients = [
+    graph.get_tensor_by_name('cost_function/logits_gradient:0'),
+]
+
+cost_function_output = graph.get_tensor_by_name('cost_function/output:0')
+cost_function_output_gradient = graph.get_tensor_by_name(
+    'cost_function/output_gradient:0')
+
+cost_function_gradient_accumulators = graph.get_collection(
+    'cost_function/gradient_accumulators')
+cost_function_update_gradient_accumulators = graph.get_operation_by_name(
+    'cost_function/update_gradient_accumulators')
+cost_function_zero_gradient_accumulators = graph.get_operation_by_name(
+    'cost_function/zero_gradient_accumulators')
+
+cost_function_feed_dict = {
+    cost_function_seed: [11, 12],
+    cost_function_training: True,
+    cost_function_logits: [[-1, 2], [3, 4]],
+    cost_function_labels: [[0, 1], [4, 3]],
+}
+
 with tf.Session() as session:
     session.run(tf.global_variables_initializer())
 
@@ -228,12 +256,8 @@ with tf.Session() as session:
     test_output(
         session, modified_statistic_output, modified_statistic_feed_dict,
         modified_statistic_training)
-    # test_batch_normalization(
-    #   modified_statistic_output, modified_statistic_feed_dict,
-    #   modified_statistic_training)
-    # test_preserving_batch_normalization_state(
-    #   modified_statistic_output, modified_statistic_feed_dict,
-    #   modified_statistic_training)
+    # test_batch_normalization
+    # test_preserving_batch_normalization_state
     test_input_gradients(
         session, modified_statistic_feed_dict,
         modified_statistic_output_gradient, [2, 150],
@@ -249,13 +273,8 @@ with tf.Session() as session:
     test_output(
         session, modified_update_output, modified_update_feed_dict,
         modified_update_training)
-    # test_batch_normalization(
-    #     session, modified_update_output, modified_update_feed_dict,
-    #     modified_update_training)
-    # test_preserving_batch_normalization_state(
-    #     session, modified_update_output, modified_update_feed_dict,
-    #     modified_update_training, collected_untrainable_variables,
-    #     set_untrainable_variables, set_untrainable_variables_input)
+    # test_batch_normalization
+    # test_preserving_batch_normalization_state
     test_input_gradients(
         session, modified_update_feed_dict, modified_update_output_gradient,
         [2, 150], modified_update_input_gradients, modified_update_training)
@@ -283,3 +302,18 @@ with tf.Session() as session:
         move_rate_training, move_rate_gradient_accumulators,
         move_rate_update_gradient_accumulators,
         move_rate_zero_gradient_accumulators)
+
+    # cost_function
+    test_output(
+        session, cost_function_output, cost_function_feed_dict,
+        cost_function_training)
+    # test_batch_normalization
+    # test_preserving_batch_normalization_state
+    test_input_gradients(
+        session, cost_function_feed_dict, cost_function_output_gradient, [],
+        cost_function_input_gradients, cost_function_training)
+    test_gradient_accumulators(
+        session, cost_function_feed_dict, cost_function_output_gradient, [],
+        cost_function_training, cost_function_gradient_accumulators,
+        cost_function_update_gradient_accumulators,
+        cost_function_zero_gradient_accumulators)
