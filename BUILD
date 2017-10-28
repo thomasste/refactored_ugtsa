@@ -5,6 +5,7 @@ cc_library(
     ],
     hdrs = [
         "common/tensorflow_wrapper.h",
+        "common/typedefs.h",
     ],
     deps = [
         "//tensorflow/core:tensorflow",

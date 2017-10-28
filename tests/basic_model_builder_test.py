@@ -29,6 +29,9 @@ set_untrainable_variables_input = graph.get_tensor_by_name(
 set_untrainable_variables = graph.get_operation_by_name(
     'set_untrainable_variables')
 
+zero_gradient_accumulators = graph.get_operation_by_name(
+    'zero_gradient_accumulators')
+
 # statistic
 statistic_seed = graph.get_tensor_by_name('statistic/seed:0')
 statistic_training = graph.get_tensor_by_name('statistic/training:0')
@@ -46,8 +49,6 @@ statistic_gradient_accumulators = graph.get_collection(
     'statistic/gradient_accumulators')
 statistic_update_gradient_accumulators = graph.get_operation_by_name(
     'statistic/update_gradient_accumulators')
-statistic_zero_gradient_accumulators = graph.get_operation_by_name(
-    'statistic/zero_gradient_accumulators')
 
 statistic_feed_dict = {
     statistic_seed: [1, 2],
@@ -72,8 +73,6 @@ update_gradient_accumulators = graph.get_collection(
     'update/gradient_accumulators')
 update_update_gradient_accumulators = graph.get_operation_by_name(
     'update/update_gradient_accumulators')
-update_zero_gradient_accumulators = graph.get_operation_by_name(
-    'update/zero_gradient_accumulators')
 
 update_feed_dict = {
     update_seed: [3, 4],
@@ -107,8 +106,6 @@ modified_statistic_gradient_accumulators = graph.get_collection(
     'modified_statistic/gradient_accumulators')
 modified_statistic_update_gradient_accumulators = graph.get_operation_by_name(
     'modified_statistic/update_gradient_accumulators')
-modified_statistic_zero_gradient_accumulators = graph.get_operation_by_name(
-    'modified_statistic/zero_gradient_accumulators')
 
 modified_statistic_feed_dict = {
     modified_statistic_seed: [5, 6],
@@ -141,8 +138,6 @@ modified_update_gradient_accumulators = graph.get_collection(
     'modified_update/gradient_accumulators')
 modified_update_update_gradient_accumulators = graph.get_operation_by_name(
     'modified_update/update_gradient_accumulators')
-modified_update_zero_gradient_accumulators = graph.get_operation_by_name(
-    'modified_update/zero_gradient_accumulators')
 
 modified_update_feed_dict = {
     modified_update_seed: [7, 8],
@@ -174,8 +169,6 @@ move_rate_gradient_accumulators = graph.get_collection(
     'move_rate/gradient_accumulators')
 move_rate_update_gradient_accumulators = graph.get_operation_by_name(
     'move_rate/update_gradient_accumulators')
-move_rate_zero_gradient_accumulators = graph.get_operation_by_name(
-    'move_rate/zero_gradient_accumulators')
 
 move_rate_feed_dict = {
     move_rate_seed: [9, 10],
@@ -204,8 +197,6 @@ cost_function_gradient_accumulators = graph.get_collection(
     'cost_function/gradient_accumulators')
 cost_function_update_gradient_accumulators = graph.get_operation_by_name(
     'cost_function/update_gradient_accumulators')
-cost_function_zero_gradient_accumulators = graph.get_operation_by_name(
-    'cost_function/zero_gradient_accumulators')
 
 cost_function_feed_dict = {
     cost_function_seed: [11, 12],
@@ -233,7 +224,7 @@ with tf.Session() as session:
         session, statistic_feed_dict, statistic_output_gradient, [2, 150],
         statistic_training, statistic_gradient_accumulators,
         statistic_update_gradient_accumulators,
-        statistic_zero_gradient_accumulators)
+        zero_gradient_accumulators)
 
     # update
     test_output(session, update_output, update_feed_dict, update_training)
@@ -250,7 +241,7 @@ with tf.Session() as session:
         session, update_feed_dict, update_output_gradient, [2, 150],
         update_training, update_gradient_accumulators,
         update_update_gradient_accumulators,
-        update_zero_gradient_accumulators)
+        zero_gradient_accumulators)
 
     # modified_statistic
     test_output(
@@ -267,7 +258,7 @@ with tf.Session() as session:
         modified_statistic_output_gradient, [2, 150],
         modified_statistic_training, modified_statistic_gradient_accumulators,
         modified_statistic_update_gradient_accumulators,
-        modified_statistic_zero_gradient_accumulators)
+        zero_gradient_accumulators)
 
     # modified_update
     test_output(
@@ -283,7 +274,7 @@ with tf.Session() as session:
         [2, 150], modified_update_training,
         modified_update_gradient_accumulators,
         modified_update_update_gradient_accumulators,
-        modified_update_zero_gradient_accumulators)
+        zero_gradient_accumulators)
 
     # move_rate
     test_output(
@@ -301,7 +292,7 @@ with tf.Session() as session:
         session, move_rate_feed_dict, move_rate_output_gradient, [2, 2],
         move_rate_training, move_rate_gradient_accumulators,
         move_rate_update_gradient_accumulators,
-        move_rate_zero_gradient_accumulators)
+        zero_gradient_accumulators)
 
     # cost_function
     test_output(
@@ -316,4 +307,4 @@ with tf.Session() as session:
         session, cost_function_feed_dict, cost_function_output_gradient, [],
         cost_function_training, cost_function_gradient_accumulators,
         cost_function_update_gradient_accumulators,
-        cost_function_zero_gradient_accumulators)
+        zero_gradient_accumulators)

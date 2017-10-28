@@ -26,6 +26,9 @@ model_builder.build()
 
 graph = tf.get_default_graph()
 
+zero_gradient_accumulators = graph.get_operation_by_name(
+    'zero_gradient_accumulators')
+
 # modified_update
 modified_update_seed = graph.get_tensor_by_name('modified_update/seed:0')
 modified_update_training = graph.get_tensor_by_name(
@@ -47,8 +50,6 @@ modified_update_gradient_accumulators = graph.get_collection(
     'modified_update/gradient_accumulators')
 modified_update_update_gradient_accumulators = graph.get_operation_by_name(
     'modified_update/update_gradient_accumulators')
-modified_update_zero_gradient_accumulators = graph.get_operation_by_name(
-    'modified_update/zero_gradient_accumulators')
 
 modified_update_feed_dict = {
     modified_update_seed: [7, 8],
@@ -76,4 +77,4 @@ with tf.Session() as session:
         [2, 150], modified_update_training,
         modified_update_gradient_accumulators,
         modified_update_update_gradient_accumulators,
-        modified_update_zero_gradient_accumulators)
+        zero_gradient_accumulators)

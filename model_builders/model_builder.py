@@ -93,10 +93,6 @@ class ModelBuilder:
             with tf.control_dependencies(update_gradient_accumulators):
                 tf.no_op('update_gradient_accumulators')
 
-            tf.variables_initializer(
-                gradient_accumulators,
-                'zero_gradient_accumulators')
-
             # placeholders gradients
             trainable_placeholders = [
                 (input['name'], placeholders[input['name']])
@@ -354,6 +350,14 @@ class ModelBuilder:
         # build methods
         for key, value in methods.items():
             self.build_graph(key, value['inputs'], value['output'])
+
+        # zero gradient accumulators
+        tf.variables_initializer(
+            [gradient_accumulator
+             for key in methods
+             for gradient_accumulator in tf.get_collection(
+                '{}/gradient_accumulators'.format(key.__name__))],
+            'zero_gradient_accumulators')
 
         # getter and setter of untrainable variables
         #  - used for preserving moving averages
