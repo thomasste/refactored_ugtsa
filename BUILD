@@ -1,11 +1,23 @@
 cc_library(
     name = "libugtsa",
     srcs = [
+        "algorithms/algorithm.cc",
+        "algorithms/mcts_algorithm.cc",
+        "algorithms/ucb_algorithm.cc",
+        "algorithms/ugtsa_algorithm.cc",
         "common/tensorflow_wrapper.cc",
+        "games/game.cc",
+        "games/omringa.cc",
     ],
     hdrs = [
+        "algorithms/algorithm.h",
+        "algorithms/mcts_algorithm.h",
+        "algorithms/ucb_algorithm.h",
+        "algorithms/ugtsa_algorithm.h",
         "common/tensorflow_wrapper.h",
         "common/typedefs.h",
+        "games/game.h",
+        "games/omringa.h",
     ],
     deps = [
         "//tensorflow/core:tensorflow",

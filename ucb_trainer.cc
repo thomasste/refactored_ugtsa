@@ -1,14 +1,15 @@
-//#include "refactored_ugtsa/algorithms/ucb_algorithm.h"
-//#include "refactored_ugtsa/algorithms/ugtsa_algorithm.h"
-//#include "refactored_ugtsa/games/omringa.h"
+#include "refactored_ugtsa/algorithms/ucb_algorithm.h"
+#include "refactored_ugtsa/algorithms/ugtsa_algorithm.h"
+#include "refactored_ugtsa/games/omringa.h"
 #include "refactored_ugtsa/common/tensorflow_wrapper.h"
 #include "refactored_ugtsa/common/typedefs.h"
-//#include "refactored_ugtsa/computation_graphs/basic_computation_graph.h"
 
 #include <iostream>
 #include <string>
 
+using namespace ugtsa::algorithms;
 using namespace ugtsa::common;
+using namespace ugtsa::games;
 
 int main(int argc, char **argv) {
     auto graph_name = std::string(argv[1]);
@@ -19,29 +20,31 @@ int main(int argc, char **argv) {
 
     std::cout << "step: " << tensorflow_wrapper.EvalIntScalar(TensorflowWrapper::STEP_TENSOR) << std::endl;
 
-    // auto game_state = OmringaGameState();
-    // game_state.MoveToRandomGameState();
-    // if (game_state.IsFinal()) {
-    //     game_state.UndoMove();
-    // }
+    int seed = 1;
 
-    // auto ucb_algorithm = UCBAlgorithm(&game_state, 5, std::sqrt(2.));
-    // auto computation_graph = BasicComputationGraph(&tensorflow_wrapper);
-    // auto ugtsa_algorithm = UGTSAAlgorithm(&game_state, 5, &tensorflow_wrapper, &computation_graph);
+    auto game_state = OmringaGameState(seed);
+    game_state.MoveToRandomState();
+    if (game_state.IsFinal()) {
+        game_state.UndoMove();
+    }
+
+    auto ucb_algorithm = UCBAlgorithm(&game_state, seed, 5, std::sqrt(2.));
+    auto ugtsa_algorithm = UGTSAAlgorithm(&game_state, seed, 5, &tensorflow_wrapper, true);
 
     // VectorVectorXf labels;
     // std::vector<int> ugtsa_move_rates;
     // VectorVectorXf logits;
-    // for (int i = 0; i < ugtsa_strength; i++) {
-    //     for (int j = 0; j < ucb_strength_multiplier; j++) {
-    //         ucb_algorithm.Improve();
-    //     }
+    for (int i = 0; i < ugtsa_strength; i++) {
+        std::cout << "iteration " << i << std::endl;
+        for (int j = 0; j < ucb_strength_multiplier; j++) {
+            ucb_algorithm.Improve();
+        }
     //     labels.push_back(ucb_algorithm.Value(ucb_algorithm.MoveRates()));
 
-    //     ugtsa_algorithm.Improve();
+        ugtsa_algorithm.Improve();
     //     ugtsa_move_rates.push_back(ugtsa_algorithm.MoveRates());
     //     logits.push_back(ugtsa_algorithm.Value(ugtsa_move_rates.back()));
-    // }
+    }
 
     auto a = Eigen::VectorXf(2);
     auto b = Eigen::VectorXf(2);
