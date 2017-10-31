@@ -50,13 +50,13 @@ class BasicModelBuilder(ModelBuilder):
         signal = tf.concat([signal, game_state_info], axis=1)
         print(signal.get_shape())
 
-        return dense_neural_network_with_batch_normalization(
+        return dense_neural_network_with_layer_norm(
             rng, training, 0.5,
             self.statistic_hidden_output_sizes + [self.statistic_size],
             signal)
 
     def update(self, rng, training, payoff):
-        return dense_neural_network_with_batch_normalization(
+        return dense_neural_network_with_layer_norm(
             rng, training, 0.5,
             self.update_hidden_output_sizes + [self.update_size],
             payoff)
@@ -110,7 +110,7 @@ class BasicModelBuilder(ModelBuilder):
     def move_rate(self, rng, training, parent_statistic, child_statistic):
         signal = tf.concat([parent_statistic, child_statistic], axis=1)
         print(signal.get_shape())
-        signal = dense_neural_network_with_batch_normalization(
+        signal = dense_neural_network_with_layer_norm(
             rng, training, 0.5, self.move_rate_hidden_output_sizes, signal)
         signal = dense_layer(self.player_count, signal)
         signal = bias_layer(signal)

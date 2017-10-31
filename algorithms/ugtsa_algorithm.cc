@@ -1,5 +1,7 @@
 #include "refactored_ugtsa/algorithms/ugtsa_algorithm.h"
 
+#include <iostream>
+
 namespace ugtsa {
 namespace algorithms {
 

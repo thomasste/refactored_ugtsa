@@ -51,7 +51,16 @@ modified_update_gradient_accumulators = graph.get_collection(
 modified_update_update_gradient_accumulators = graph.get_operation_by_name(
     'modified_update/update_gradient_accumulators')
 
-modified_update_feed_dict = {
+modified_update_feed_dict1 = {
+    modified_update_seed: [7, 8],
+    modified_update_training: True,
+    modified_update_update:
+        [[x % 7 for x in range(150)]],
+    modified_update_statistic:
+        [[x % 3 for x in range(150)]],
+}
+
+modified_update_feed_dict2 = {
     modified_update_seed: [7, 8],
     modified_update_training: True,
     modified_update_update:
@@ -65,15 +74,30 @@ with tf.Session() as session:
 
     # modified_update
     test_output(
-        session, modified_update_output, modified_update_feed_dict,
+        session, modified_update_output, modified_update_feed_dict1,
         modified_update_training)
     # test_batch_normalization
     # test_preserving_batch_normalization_state
     test_input_gradients(
-        session, modified_update_feed_dict, modified_update_output_gradient,
+        session, modified_update_feed_dict1, modified_update_output_gradient,
         [2, 150], modified_update_input_gradients, modified_update_training)
     test_gradient_accumulators(
-        session, modified_update_feed_dict, modified_update_output_gradient,
+        session, modified_update_feed_dict1, modified_update_output_gradient,
+        [2, 150], modified_update_training,
+        modified_update_gradient_accumulators,
+        modified_update_update_gradient_accumulators,
+        zero_gradient_accumulators)
+
+    test_output(
+        session, modified_update_output, modified_update_feed_dict2,
+        modified_update_training)
+    # test_batch_normalization
+    # test_preserving_batch_normalization_state
+    test_input_gradients(
+        session, modified_update_feed_dict2, modified_update_output_gradient,
+        [2, 150], modified_update_input_gradients, modified_update_training)
+    test_gradient_accumulators(
+        session, modified_update_feed_dict2, modified_update_output_gradient,
         [2, 150], modified_update_training,
         modified_update_gradient_accumulators,
         modified_update_update_gradient_accumulators,

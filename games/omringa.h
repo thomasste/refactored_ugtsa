@@ -54,6 +54,8 @@ public:
     Eigen::VectorXf Payoff();
 
     void PrintDebugInfo();
+
+    int GroupsCount(int player);
 };
 
 }

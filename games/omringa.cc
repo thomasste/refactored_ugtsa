@@ -106,15 +106,72 @@ Eigen::VectorXf OmringaGameState::Info() {
 }
 
 Eigen::VectorXf OmringaGameState::Payoff() {
-    // TODO: change
     Eigen::VectorXf result(2);
-    result << (float) bets[0], (float) bets[1];
+    result << (float) GroupsCount(0) * bets[0], (float) GroupsCount(1) * bets[1];
+
+    for (int y = 0; y < BOARD_SIZE; y++) {
+        for (int x = 0; x < BOARD_SIZE; x++) {
+            if (board(y, x) == 1.) {
+                result[0] += 1;
+            } else if (board(y, x) == 2.) {
+                result[1] += 1;
+            }
+        }
+    }
+
+    if (bets[0] < bets[1]) {
+        result[0] += (float) bets[0] + 0.5;
+    } else if (bets[0] > bets[1]) {
+        result[1] += (float) bets[1] + 0.5;
+    } else {
+        result[chosen_player ^ 1] += bets[chosen_player ^ 1] + 0.5;
+    }
+
     return result;
 }
 
 void OmringaGameState::PrintDebugInfo() {
 }
 
+int OmringaGameState::GroupsCount(int player) {
+    auto groups = 0;
+    auto fplayer = (float) player + 1.;
+    auto stack = std::vector<Position>();
+    bool visited[BOARD_SIZE][BOARD_SIZE];
+
+    for (int i = 0; i < BOARD_SIZE; i++) for (int j = 0; j < BOARD_SIZE; j++) visited[i][j] = false;
+
+    for (int y = 0; y < BOARD_SIZE; y++) {
+        for (int x = 0; x < BOARD_SIZE; x++) {
+            if (!visited[y][x] && board(y, x) == fplayer) {
+                visited[y][x] = true;
+                groups++;
+
+                stack.push_back({x, y});
+                while (!stack.empty()) {
+                    auto p = stack.back(); stack.pop_back();
+
+                    int dy[] = {-1, 0, 0, 1};
+                    int dx[] = {0, -1, 1, 0};
+
+                    for (int i = 0; i < 4; i++) {
+                        auto np = Position({p.x + dx[i], p.y + dy[i]});
+
+                        if (0 <= np.x && np.x < BOARD_SIZE &&
+                                0 <= np.y && np.y <= BOARD_SIZE &&
+                                !visited[np.y][np.x] &&
+                                board(np.y, np.x) == fplayer) {
+                            visited[np.y][np.x] = true;
+                            stack.push_back(np);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return groups;
+}
 
 }
 }

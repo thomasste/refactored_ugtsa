@@ -1,5 +1,7 @@
 #include "refactored_ugtsa/algorithms/mcts_algorithm.h"
 
+#include <iostream>
+
 namespace ugtsa {
 namespace algorithms {
 
@@ -41,6 +43,11 @@ void MCTSAlgorithm::Improve() {
             state_stack.push_back(node.children[0] + move);
             game_state->ApplyMove(move);
         }
+
+        // if (state_stack.size() > 4) {
+        //     std::cout << "depth " << state_stack.size() << std::endl;
+        // }
+
 
         auto &leaf = tree[state_stack.back()];
         leaf.number_of_visits++;

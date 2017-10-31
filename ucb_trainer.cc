@@ -42,6 +42,14 @@ int main(int argc, char **argv) {
     //     labels.push_back(ucb_algorithm.Value(ucb_algorithm.MoveRates()));
 
         ugtsa_algorithm.Improve();
+
+        // for (auto &move_rate : ucb_algorithm.MoveRates()) {
+        //     std::cout << ucb_algorithm.Value(move_rate) << std::endl;
+        // }
+
+        // for (auto &move_rate : ugtsa_algorithm.MoveRates()) {
+        //     std::cout << ugtsa_algorithm.Value(move_rate) << std::endl;
+        // }
     //     ugtsa_move_rates.push_back(ugtsa_algorithm.MoveRates());
     //     logits.push_back(ugtsa_algorithm.Value(ugtsa_move_rates.back()));
     }
