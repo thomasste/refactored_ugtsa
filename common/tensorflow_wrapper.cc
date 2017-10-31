@@ -114,7 +114,7 @@ void TensorflowWrapper::LoadModel(int version) {
     TF_CHECK_OK(session->Run({{PATH_TENSOR, model_path}}, {}, {LOAD_OP}, nullptr));
 }
 
-tf::Tensor TensorflowWrapper::VectorVectorXfToTensor(VectorVectorXf v) {
+tf::Tensor TensorflowWrapper::VectorVectorXfToTensor(const VectorVectorXf &v) {
     auto t = tf::Tensor(tf::DT_FLOAT, {(int) v.size(), (int) v[0].size()});
     auto view = t.matrix<float>();
     for (uint i = 0; i < v.size(); i++) {
@@ -125,7 +125,7 @@ tf::Tensor TensorflowWrapper::VectorVectorXfToTensor(VectorVectorXf v) {
     return t;
 }
 
-VectorVectorXf TensorflowWrapper::TensorToVectorVectorXf(tf::Tensor t) {
+VectorVectorXf TensorflowWrapper::TensorToVectorVectorXf(const tf::Tensor &t) {
     auto v = VectorVectorXf();
     auto view = t.matrix<float>();
     for (int i = 0; i < t.dim_size(0); i++) {
@@ -138,7 +138,7 @@ VectorVectorXf TensorflowWrapper::TensorToVectorVectorXf(tf::Tensor t) {
     return v;
 }
 
-tf::Tensor TensorflowWrapper::VectorXfToTensor(Eigen::VectorXf v) {
+tf::Tensor TensorflowWrapper::VectorXfToTensor(const Eigen::VectorXf &v) {
     auto t = tf::Tensor(tf::DT_FLOAT, {v.size()});
     auto view = t.vec<float>();
     for (int i = 0; i < v.size(); i++) {
@@ -147,7 +147,7 @@ tf::Tensor TensorflowWrapper::VectorXfToTensor(Eigen::VectorXf v) {
     return t;
 }
 
-Eigen::VectorXf TensorflowWrapper::TensorToVectorXf(tf::Tensor t) {
+Eigen::VectorXf TensorflowWrapper::TensorToVectorXf(const tf::Tensor &t) {
     Eigen::VectorXf v = Eigen::VectorXf::Zero(t.dim_size(0));
     auto view = t.vec<float>();
     for (int i = 0; i < t.dim_size(0); i++) {
@@ -156,7 +156,7 @@ Eigen::VectorXf TensorflowWrapper::TensorToVectorXf(tf::Tensor t) {
     return v;
 }
 
-std::pair<tf::Tensor, tf::Tensor> TensorflowWrapper::VectorVectorVectorXfToTensors(std::vector<VectorVectorXf> v, int size) {
+std::pair<tf::Tensor, tf::Tensor> TensorflowWrapper::VectorVectorVectorXfToTensors(const std::vector<VectorVectorXf> &v, int size) {
     auto t0 = tf::Tensor(tf::DT_INT32, {(int) v.size()});
     auto view0 = t0.vec<int>();
     for (uint i = 0; i < v.size(); i++) {
@@ -183,7 +183,7 @@ std::pair<tf::Tensor, tf::Tensor> TensorflowWrapper::VectorVectorVectorXfToTenso
     return {t0, t1};
 }
 
-std::vector<VectorVectorXf> TensorflowWrapper::TensorToVectorVectorVectorXf(tf::Tensor t, std::vector<VectorVectorXf> s) {
+std::vector<VectorVectorXf> TensorflowWrapper::TensorToVectorVectorVectorXf(const tf::Tensor &t, const std::vector<VectorVectorXf> &s) {
     auto view = t.matrix<float>();
     auto vvv = std::vector<VectorVectorXf>();
     for (uint i = 0; i < s.size(); i++) {
@@ -200,7 +200,7 @@ std::vector<VectorVectorXf> TensorflowWrapper::TensorToVectorVectorVectorXf(tf::
     return vvv;
 }
 
-tf::Tensor TensorflowWrapper::VectorMatrixXfToTensor(VectorMatrixXf v) {
+tf::Tensor TensorflowWrapper::VectorMatrixXfToTensor(const VectorMatrixXf &v) {
     auto t = tf::Tensor(tf::DT_FLOAT, {(int) v.size(), v[0].rows(), v[0].cols()});
     auto view = t.tensor<float, 3>();
     for (uint i = 0; i < v.size(); i++) {
@@ -225,11 +225,11 @@ tf::Tensor TensorflowWrapper::FloatToTensor(float f) {
     return t;
 }
 
-float TensorflowWrapper::TensorToFloat(tf::Tensor t) {
+float TensorflowWrapper::TensorToFloat(const tf::Tensor &t) {
     return t.scalar<float>()(0);
 }
 
-tf::Tensor TensorflowWrapper::SeedToTensor(std::array<long long int, 2> seed) {
+tf::Tensor TensorflowWrapper::SeedToTensor(const std::array<long long int, 2> &seed) {
     auto t = tf::Tensor(tf::DT_INT64, {2});
     auto view = t.vec<long long int>();
     view(0) = seed[0];
@@ -268,7 +268,7 @@ Eigen::VectorXf TensorflowWrapper::GetUntrainableModel() {
     return TensorToVectorXf(outputs[0]);
 }
 
-void TensorflowWrapper::SetUntrainableModel(Eigen::VectorXf model) {
+void TensorflowWrapper::SetUntrainableModel(const Eigen::VectorXf &model) {
     TF_CHECK_OK(session->Run({{SET_UNTRAINABLE_MODEL_INPUT, VectorXfToTensor(model)}}, {}, {SET_UNTRAINABLE_MODEL_OP}, nullptr));
 }
 
@@ -280,7 +280,7 @@ void TensorflowWrapper::ApplyGradients() {
     TF_CHECK_OK(session->Run({}, {}, {APPLY_GRADIENTS_OP}, nullptr));
 }
 
-VectorVectorXf TensorflowWrapper::Statistic(std::array<long long int, 2> seed, bool training, VectorMatrixXf board, VectorVectorXf game_state_info) {
+VectorVectorXf TensorflowWrapper::Statistic(const std::array<long long int, 2> &seed, bool training, const VectorMatrixXf &board, const VectorVectorXf &game_state_info) {
     auto outputs = std::vector<tf::Tensor>();
     TF_CHECK_OK(
         session->Run({
@@ -294,7 +294,7 @@ VectorVectorXf TensorflowWrapper::Statistic(std::array<long long int, 2> seed, b
     return TensorToVectorVectorXf(outputs[0]);
 }
 
-void TensorflowWrapper::BackpropagateStatistic(std::array<long long int, 2> seed, bool training, VectorMatrixXf board, VectorVectorXf game_state_info, VectorVectorXf output_gradient) {
+void TensorflowWrapper::BackpropagateStatistic(const std::array<long long int, 2> &seed, bool training, const VectorMatrixXf &board, const VectorVectorXf &game_state_info, const VectorVectorXf &output_gradient) {
     TF_CHECK_OK(
         session->Run({
                 {STATISTIC_SEED, SeedToTensor(seed)},
@@ -307,7 +307,7 @@ void TensorflowWrapper::BackpropagateStatistic(std::array<long long int, 2> seed
             nullptr));
 }
 
-VectorVectorXf TensorflowWrapper::Update(std::array<long long int, 2> seed, bool training, VectorVectorXf payoff) {
+VectorVectorXf TensorflowWrapper::Update(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &payoff) {
     auto outputs = std::vector<tf::Tensor>();
     TF_CHECK_OK(
         session->Run({
@@ -320,7 +320,7 @@ VectorVectorXf TensorflowWrapper::Update(std::array<long long int, 2> seed, bool
     return TensorToVectorVectorXf(outputs[0]);
 }
 
-void TensorflowWrapper::BackpropagateUpdate(std::array<long long int, 2> seed, bool training, VectorVectorXf payoff, VectorVectorXf output_gradient) {
+void TensorflowWrapper::BackpropagateUpdate(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &payoff, const VectorVectorXf &output_gradient) {
     TF_CHECK_OK(
         session->Run({
                 {UPDATE_SEED, SeedToTensor(seed)},
@@ -332,7 +332,7 @@ void TensorflowWrapper::BackpropagateUpdate(std::array<long long int, 2> seed, b
             nullptr));
 }
 
-VectorVectorXf TensorflowWrapper::ModifiedStatistic(std::array<long long int, 2> seed, bool training, VectorVectorXf statistic, std::vector<VectorVectorXf> updates) {
+VectorVectorXf TensorflowWrapper::ModifiedStatistic(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &statistic, const std::vector<VectorVectorXf> &updates) {
     auto tensors = VectorVectorVectorXfToTensors(updates, worker_count);
     auto outputs = std::vector<tf::Tensor>();
     TF_CHECK_OK(
@@ -348,7 +348,7 @@ VectorVectorXf TensorflowWrapper::ModifiedStatistic(std::array<long long int, 2>
     return TensorToVectorVectorXf(outputs[0]);
 }
 
-std::pair<VectorVectorXf, std::vector<VectorVectorXf>> TensorflowWrapper::BackpropagateModifiedStatistic(std::array<long long int, 2> seed, bool training, VectorVectorXf statistic, std::vector<VectorVectorXf> updates, VectorVectorXf output_gradient) {
+std::pair<VectorVectorXf, std::vector<VectorVectorXf>> TensorflowWrapper::BackpropagateModifiedStatistic(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &statistic, const std::vector<VectorVectorXf> &updates, const VectorVectorXf &output_gradient) {
     auto tensors = VectorVectorVectorXfToTensors(updates, worker_count);
     auto outputs = std::vector<tf::Tensor>();
     TF_CHECK_OK(
@@ -364,7 +364,7 @@ std::pair<VectorVectorXf, std::vector<VectorVectorXf>> TensorflowWrapper::Backpr
     return {TensorToVectorVectorXf(outputs[0]), TensorToVectorVectorVectorXf(outputs[1], updates)};
 }
 
-VectorVectorXf TensorflowWrapper::ModifiedUpdate(std::array<long long int, 2> seed, bool training, VectorVectorXf update, VectorVectorXf statistic) {
+VectorVectorXf TensorflowWrapper::ModifiedUpdate(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &update, const VectorVectorXf &statistic) {
     auto outputs = std::vector<tf::Tensor>();
     TF_CHECK_OK(
         session->Run({
@@ -378,7 +378,7 @@ VectorVectorXf TensorflowWrapper::ModifiedUpdate(std::array<long long int, 2> se
     return TensorToVectorVectorXf(outputs[0]);
 }
 
-std::pair<VectorVectorXf, VectorVectorXf> TensorflowWrapper::BackpropagateModifiedUpdate(std::array<long long int, 2> seed, bool training, VectorVectorXf update, VectorVectorXf statistic, VectorVectorXf output_gradient) {
+std::pair<VectorVectorXf, VectorVectorXf> TensorflowWrapper::BackpropagateModifiedUpdate(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &update, const VectorVectorXf &statistic, const VectorVectorXf &output_gradient) {
     auto outputs = std::vector<tf::Tensor>();
     TF_CHECK_OK(
         session->Run({
@@ -393,7 +393,7 @@ std::pair<VectorVectorXf, VectorVectorXf> TensorflowWrapper::BackpropagateModifi
     return {TensorToVectorVectorXf(outputs[0]), TensorToVectorVectorXf(outputs[1])};
 }
 
-VectorVectorXf TensorflowWrapper::MoveRate(std::array<long long int, 2> seed, bool training, VectorVectorXf parent_statistic, VectorVectorXf child_statistic) {
+VectorVectorXf TensorflowWrapper::MoveRate(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &parent_statistic, const VectorVectorXf &child_statistic) {
     auto outputs = std::vector<tf::Tensor>();
     TF_CHECK_OK(
         session->Run({
@@ -407,7 +407,7 @@ VectorVectorXf TensorflowWrapper::MoveRate(std::array<long long int, 2> seed, bo
     return TensorToVectorVectorXf(outputs[0]);
 }
 
-std::pair<VectorVectorXf, VectorVectorXf> TensorflowWrapper::BackpropagateMoveRate(std::array<long long int, 2> seed, bool training, VectorVectorXf parent_statistic, VectorVectorXf child_statistic, VectorVectorXf output_gradient) {
+std::pair<VectorVectorXf, VectorVectorXf> TensorflowWrapper::BackpropagateMoveRate(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &parent_statistic, const VectorVectorXf &child_statistic, const VectorVectorXf &output_gradient) {
     auto outputs = std::vector<tf::Tensor>();
     TF_CHECK_OK(
         session->Run({
@@ -422,7 +422,7 @@ std::pair<VectorVectorXf, VectorVectorXf> TensorflowWrapper::BackpropagateMoveRa
     return {TensorToVectorVectorXf(outputs[0]), TensorToVectorVectorXf(outputs[1])};
 }
 
-float TensorflowWrapper::CostFunction(VectorVectorXf logits, VectorVectorXf labels) {
+float TensorflowWrapper::CostFunction(const VectorVectorXf &logits, const VectorVectorXf &labels) {
     auto outputs = std::vector<tf::Tensor>();
     TF_CHECK_OK(
         session->Run({
@@ -436,7 +436,7 @@ float TensorflowWrapper::CostFunction(VectorVectorXf logits, VectorVectorXf labe
     return TensorToFloat(outputs[0]);
 }
 
-VectorVectorXf TensorflowWrapper::BackpropagateCostFunction(VectorVectorXf logits, VectorVectorXf labels) {
+VectorVectorXf TensorflowWrapper::BackpropagateCostFunction(const VectorVectorXf &logits, const VectorVectorXf &labels) {
     auto outputs = std::vector<tf::Tensor>();
     TF_CHECK_OK(
         session->Run({

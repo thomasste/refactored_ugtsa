@@ -95,17 +95,17 @@ private:
     void LoadGraph();
     void LoadModel(int version);
 
-    tf::Tensor VectorVectorXfToTensor(VectorVectorXf v);
-    VectorVectorXf TensorToVectorVectorXf(tf::Tensor t);
-    tf::Tensor VectorXfToTensor(Eigen::VectorXf v);
-    Eigen::VectorXf TensorToVectorXf(tf::Tensor t);
-    std::pair<tf::Tensor, tf::Tensor> VectorVectorVectorXfToTensors(std::vector<VectorVectorXf> v, int size);
-    std::vector<VectorVectorXf> TensorToVectorVectorVectorXf(tf::Tensor t, std::vector<VectorVectorXf> s);
-    tf::Tensor VectorMatrixXfToTensor(VectorMatrixXf v);
+    tf::Tensor VectorVectorXfToTensor(const VectorVectorXf &v);
+    VectorVectorXf TensorToVectorVectorXf(const tf::Tensor &t);
+    tf::Tensor VectorXfToTensor(const Eigen::VectorXf &v);
+    Eigen::VectorXf TensorToVectorXf(const tf::Tensor &t);
+    std::pair<tf::Tensor, tf::Tensor> VectorVectorVectorXfToTensors(const std::vector<VectorVectorXf> &v, int size);
+    std::vector<VectorVectorXf> TensorToVectorVectorVectorXf(const tf::Tensor &t, const std::vector<VectorVectorXf> &s);
+    tf::Tensor VectorMatrixXfToTensor(const VectorMatrixXf &v);
     tf::Tensor BoolToTensor(bool b);
     tf::Tensor FloatToTensor(float f);
-    float TensorToFloat(tf::Tensor t);
-    tf::Tensor SeedToTensor(std::array<long long int, 2> seed);
+    float TensorToFloat(const tf::Tensor &t);
+    tf::Tensor SeedToTensor(const std::array<long long int, 2> &seed);
 
 public:
     TensorflowWrapper(std::string graph_name, int version);
@@ -115,23 +115,23 @@ public:
     int EvalIntScalar(std::string name);
 
     Eigen::VectorXf GetUntrainableModel();
-    void SetUntrainableModel(Eigen::VectorXf model);
+    void SetUntrainableModel(const Eigen::VectorXf &model);
 
     void ZeroGradientAccumulators();
     void ApplyGradients();
 
-    VectorVectorXf Statistic(std::array<long long int, 2> seed, bool training, VectorMatrixXf board, VectorVectorXf game_state_info);
-    void BackpropagateStatistic(std::array<long long int, 2> seed, bool training, VectorMatrixXf board, VectorVectorXf game_state_info, VectorVectorXf output_gradient);
-    VectorVectorXf Update(std::array<long long int, 2> seed, bool training, VectorVectorXf payoff);
-    void BackpropagateUpdate(std::array<long long int, 2> seed, bool training, VectorVectorXf payoff, VectorVectorXf output_gradient);
-    VectorVectorXf ModifiedStatistic(std::array<long long int, 2> seed, bool training, VectorVectorXf statistic, std::vector<VectorVectorXf> updates);
-    std::pair<VectorVectorXf, std::vector<VectorVectorXf>> BackpropagateModifiedStatistic(std::array<long long int, 2> seed, bool training, VectorVectorXf statistic, std::vector<VectorVectorXf> updates, VectorVectorXf output_gradient);
-    VectorVectorXf ModifiedUpdate(std::array<long long int, 2> seed, bool training, VectorVectorXf update, VectorVectorXf statistic);
-    std::pair<VectorVectorXf, VectorVectorXf> BackpropagateModifiedUpdate(std::array<long long int, 2> seed, bool training, VectorVectorXf update, VectorVectorXf statistic, VectorVectorXf output_gradient);
-    VectorVectorXf MoveRate(std::array<long long int, 2> seed, bool training, VectorVectorXf parent_statistic, VectorVectorXf child_statistic);
-    std::pair<VectorVectorXf, VectorVectorXf> BackpropagateMoveRate(std::array<long long int, 2> seed, bool training, VectorVectorXf parent_statistic, VectorVectorXf child_statistic, VectorVectorXf output_gradient);
-    float CostFunction(VectorVectorXf logits, VectorVectorXf labels);
-    VectorVectorXf BackpropagateCostFunction(VectorVectorXf logits, VectorVectorXf labels);
+    VectorVectorXf Statistic(const std::array<long long int, 2> &seed, bool training, const VectorMatrixXf &board, const VectorVectorXf &game_state_info);
+    void BackpropagateStatistic(const std::array<long long int, 2> &seed, bool training, const VectorMatrixXf &board, const VectorVectorXf &game_state_info, const VectorVectorXf &output_gradient);
+    VectorVectorXf Update(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &payoff);
+    void BackpropagateUpdate(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &payoff, const VectorVectorXf &output_gradient);
+    VectorVectorXf ModifiedStatistic(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &statistic, const std::vector<VectorVectorXf> &updates);
+    std::pair<VectorVectorXf, std::vector<VectorVectorXf>> BackpropagateModifiedStatistic(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &statistic, const std::vector<VectorVectorXf> &updates, const VectorVectorXf &output_gradient);
+    VectorVectorXf ModifiedUpdate(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &update, const VectorVectorXf &statistic);
+    std::pair<VectorVectorXf, VectorVectorXf> BackpropagateModifiedUpdate(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &update, const VectorVectorXf &statistic, const VectorVectorXf &output_gradient);
+    VectorVectorXf MoveRate(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &parent_statistic, const VectorVectorXf &child_statistic);
+    std::pair<VectorVectorXf, VectorVectorXf> BackpropagateMoveRate(const std::array<long long int, 2> &seed, bool training, const VectorVectorXf &parent_statistic, const VectorVectorXf &child_statistic, const VectorVectorXf &output_gradient);
+    float CostFunction(const VectorVectorXf &logits, const VectorVectorXf &labels);
+    VectorVectorXf BackpropagateCostFunction(const VectorVectorXf &logits, const VectorVectorXf &labels);
 };
 
 }
