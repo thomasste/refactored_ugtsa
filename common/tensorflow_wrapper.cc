@@ -56,7 +56,7 @@ const std::string TensorflowWrapper::MODIFIED_UPDATE_UPDATE = "modified_update/u
 const std::string TensorflowWrapper::MODIFIED_UPDATE_STATISTIC = "modified_update/statistic:0";
 const std::string TensorflowWrapper::MODIFIED_UPDATE_OUTPUT = "modified_update/output:0";
 const std::string TensorflowWrapper::MODIFIED_UPDATE_OUTPUT_GRADIENT = "modified_update/output_gradient:0";
-const std::string TensorflowWrapper::MODIFIED_UPDATE_UPDATE_GRADIENT = "modified_update/updates_gradient:0";
+const std::string TensorflowWrapper::MODIFIED_UPDATE_UPDATE_GRADIENT = "modified_update/update_gradient:0";
 const std::string TensorflowWrapper::MODIFIED_UPDATE_STATISTIC_GRADIENT = "modified_update/statistic_gradient:0";
 const std::string TensorflowWrapper::MODIFIED_UPDATE_UPDATE_GRADIENT_ACCUMULATORS_OP = "modified_update/update_gradient_accumulators";
 
@@ -357,7 +357,8 @@ std::pair<VectorVectorXf, std::vector<VectorVectorXf>> TensorflowWrapper::Backpr
                 {MODIFIED_STATISTIC_TRAINING, BoolToTensor(training)},
                 {MODIFIED_STATISTIC_STATISTIC, VectorVectorXfToTensor(statistic)},
                 {MODIFIED_STATISTIC_UPDATES_COUNT, tensors.first},
-                {MODIFIED_STATISTIC_UPDATES, tensors.second}},
+                {MODIFIED_STATISTIC_UPDATES, tensors.second},
+                {MODIFIED_STATISTIC_OUTPUT_GRADIENT, VectorVectorXfToTensor(output_gradient)}},
             {MODIFIED_STATISTIC_STATISTIC_GRADIENT, MODIFIED_STATISTIC_UPDATES_GRADIENT},
             {MODIFIED_STATISTIC_UPDATE_GRADIENT_ACCUMULATORS_OP},
             &outputs));

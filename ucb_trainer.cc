@@ -78,6 +78,7 @@ int main(int argc, char **argv) {
     for (auto logit_gradient : logits_gradients) {
         std::cout << logit_gradient << std::endl;
     }
+    ugtsa_algorithm.Backpropagate(std::vector<int>{}, VectorVectorXf{});
     //computation_graph.Backpropagate(ugtsa_move_rates, logits_gradients);
     tensorflow_wrapper.ApplyGradients();
     tensorflow_wrapper.SetUntrainableModel(untrainable_model);

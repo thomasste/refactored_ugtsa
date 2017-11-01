@@ -12,13 +12,14 @@ namespace algorithms {
 class UGTSAAlgorithm : public MCTSAlgorithm {
 private:
     enum Type {
-        INITIAL,
-        MODIFIED
+        STATISTIC,
+        UPDATE,
+        MODIFIED_STATISTIC,
+        MODIFIED_UPDATE,
+        MOVE_RATE
     };
 
     struct Statistic_ {
-        Type type;
-
         std::array<long long int, 2> seed;
         Eigen::VectorXf value;
 
@@ -34,8 +35,6 @@ private:
     };
 
     struct Update_ {
-        Type type;
-
         std::array<long long int, 2> seed;
         Eigen::VectorXf value;
 
@@ -66,6 +65,8 @@ private:
     std::vector<Update_> updates;
     std::vector<MoveRate_> move_rates;
 
+    std::vector<Type> order;
+
     std::uniform_int_distribution<long long int> distribution;
 
     std::array<long long int, 2> Seed();
@@ -79,6 +80,8 @@ public:
     int ModifiedStatistic(int statistic, int update);
     int ModifiedUpdate(int update, int statistic);
     int MoveRate(int parent_statistic, int child_statistic);
+
+    void Backpropagate(std::vector<int> move_rates_, VectorVectorXf move_rate_gradients_);
 };
 
 }
