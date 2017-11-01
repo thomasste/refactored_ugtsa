@@ -107,14 +107,14 @@ Eigen::VectorXf OmringaGameState::Info() {
 
 Eigen::VectorXf OmringaGameState::Payoff() {
     Eigen::VectorXf result(2);
-    result << (float) GroupsCount(0) * bets[0], (float) GroupsCount(1) * bets[1];
+    result << (float) GroupsCount(0) * GROUP_PENALTY, (float) GroupsCount(1) * GROUP_PENALTY;
 
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             if (board(y, x) == 1.) {
-                result[0] += 1;
+                result[0] += 1.;
             } else if (board(y, x) == 2.) {
-                result[1] += 1;
+                result[1] += 1.;
             }
         }
     }

@@ -27,7 +27,7 @@ models = {
             update_hidden_output_sizes=[150, 150, 150],
             modified_statistic_lstm_state_sizes=[25, 25, 25],
             modified_update_hidden_output_sizes=[150, 150, 150],
-            move_rate_hidden_output_sizes=[]),
+            move_rate_hidden_output_sizes=[150, 150, 150]),
     '25102017_vertical':
         lambda game_info, worker_count: VerticalLSTMModelBuilder(
             model_builder=BasicModelBuilder(
@@ -44,6 +44,6 @@ models = {
                 update_hidden_output_sizes=[150, 150, 150],
                 modified_statistic_lstm_state_sizes=[25, 25, 25],
                 modified_update_hidden_output_sizes=None,
-                move_rate_hidden_output_sizes=[]),
+                move_rate_hidden_output_sizes=[150, 150, 150]),
             modified_update_lstm_state_sizes=[25, 25, 25]),
 }

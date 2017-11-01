@@ -33,6 +33,7 @@ public:
     virtual int ModifiedStatistic(int statistic, int update) = 0;
     virtual int ModifiedUpdate(int update, int statistic) = 0;
     virtual int MoveRate(int parent_statistic, int child_statistic) = 0;
+    virtual Eigen::VectorXf UntrackedMoveRate(int parent_statistic, int child_statistic) = 0;
 };
 
 }

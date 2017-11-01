@@ -35,7 +35,7 @@ void GameState::MoveToRandomState() {
             ApplyMove(std::uniform_int_distribution<int>(0, MoveCount() - 1)(generator));
         } else {
             auto ucb_algorithm = UCBAlgorithm(this, std::uniform_int_distribution<int>()(generator), 5, std::sqrt(2.));
-            for (int i = 0; i < 1000; i++) {
+            for (int i = 0; i < 10000; i++) {
                 ucb_algorithm.Improve();
             }
             ApplyMove(ucb_algorithm.BestMove());

@@ -1,7 +1,5 @@
 #include "refactored_ugtsa/algorithms/mcts_algorithm.h"
 
-#include <iostream>
-
 namespace ugtsa {
 namespace algorithms {
 
@@ -33,7 +31,7 @@ void MCTSAlgorithm::Improve() {
 
                 for (auto i = node.children[0]; i < node.children[1]; i++) {
                     auto &child_statistic = tree[i].statistic;
-                    auto move_rate = Value(MoveRate(parent_statistic, child_statistic))(game_state->player);
+                    auto move_rate = UntrackedMoveRate(parent_statistic, child_statistic)(game_state->player);
                     if (best_rate < move_rate) {
                         best_rate = move_rate;
                         move = i - node.children[0];
@@ -43,11 +41,6 @@ void MCTSAlgorithm::Improve() {
             state_stack.push_back(node.children[0] + move);
             game_state->ApplyMove(move);
         }
-
-        // if (state_stack.size() > 4) {
-        //     std::cout << "depth " << state_stack.size() << std::endl;
-        // }
-
 
         auto &leaf = tree[state_stack.back()];
         leaf.number_of_visits++;

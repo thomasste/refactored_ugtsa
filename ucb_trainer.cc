@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 
     std::cout << "step: " << tensorflow_wrapper.EvalIntScalar(TensorflowWrapper::STEP_TENSOR) << std::endl;
 
-    int seed = 1;
+    int seed = time(0);
 
     auto game_state = OmringaGameState(seed);
     game_state.MoveToRandomState();
@@ -28,46 +28,28 @@ int main(int argc, char **argv) {
         game_state.UndoMove();
     }
 
+    std::cout << game_state.Info() << std::endl;
+    std::cout << game_state.Board() << std::endl;
+
     auto ucb_algorithm = UCBAlgorithm(&game_state, seed, 5, std::sqrt(2.));
     auto ugtsa_algorithm = UGTSAAlgorithm(&game_state, seed, 5, &tensorflow_wrapper, true);
 
-    // VectorVectorXf labels;
-    // std::vector<int> ugtsa_move_rates;
-    // VectorVectorXf logits;
+    VectorVectorXf labels;
+    std::vector<int> ugtsa_move_rates;
+    VectorVectorXf logits;
     for (int i = 0; i < ugtsa_strength; i++) {
-        std::cout << "iteration " << i << std::endl;
-        for (int j = 0; j < ucb_strength_multiplier; j++) {
-            ucb_algorithm.Improve();
-        }
-    //     labels.push_back(ucb_algorithm.Value(ucb_algorithm.MoveRates()));
-
+        //std::cout << "iteration: " << i << std::endl;
+        for (int j = 0; j < ucb_strength_multiplier; j++) ucb_algorithm.Improve();
         ugtsa_algorithm.Improve();
 
-        // for (auto &move_rate : ucb_algorithm.MoveRates()) {
-        //     std::cout << ucb_algorithm.Value(move_rate) << std::endl;
-        // }
-
-        // for (auto &move_rate : ugtsa_algorithm.MoveRates()) {
-        //     std::cout << ugtsa_algorithm.Value(move_rate) << std::endl;
-        // }
-    //     ugtsa_move_rates.push_back(ugtsa_algorithm.MoveRates());
-    //     logits.push_back(ugtsa_algorithm.Value(ugtsa_move_rates.back()));
+        for (int move_rate : ucb_algorithm.MoveRates()) {
+            labels.push_back(ucb_algorithm.Value(move_rate));
+        }
+        for (int move_rate : ugtsa_algorithm.MoveRates()) {
+            ugtsa_move_rates.push_back(move_rate);
+            logits.push_back(ugtsa_algorithm.Value(move_rate));
+        }
     }
-
-    auto a = Eigen::VectorXf(2);
-    auto b = Eigen::VectorXf(2);
-    auto c = Eigen::VectorXf(2);
-    auto d = Eigen::VectorXf(2);
-    a(0) = 1.;
-    a(1) = 2.;
-    b(0) = 2.;
-    b(1) = 1.;
-    c(0) = 2.;
-    c(1) = -1.;
-    d(0) = 1.;
-    d(1) = 1.;
-    auto logits = VectorVectorXf({a, b});
-    auto labels = VectorVectorXf({c, d});
 
     auto loss = tensorflow_wrapper.CostFunction(logits, labels);
     std::cout << "loss: " << loss << std::endl;
@@ -75,11 +57,7 @@ int main(int argc, char **argv) {
     auto untrainable_model = tensorflow_wrapper.GetUntrainableModel();
     tensorflow_wrapper.ZeroGradientAccumulators();
     auto logits_gradients = tensorflow_wrapper.BackpropagateCostFunction(logits, labels);
-    for (auto logit_gradient : logits_gradients) {
-        std::cout << logit_gradient << std::endl;
-    }
-    ugtsa_algorithm.Backpropagate(std::vector<int>{}, VectorVectorXf{});
-    //computation_graph.Backpropagate(ugtsa_move_rates, logits_gradients);
+    ugtsa_algorithm.Backpropagate(ugtsa_move_rates, logits_gradients);
     tensorflow_wrapper.ApplyGradients();
     tensorflow_wrapper.SetUntrainableModel(untrainable_model);
 
