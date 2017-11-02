@@ -35,6 +35,14 @@ cc_binary(
 )
 
 cc_binary(
+    name = "evaluator",
+    srcs = ["evaluator.cc"],
+    deps = [
+        ":libugtsa",
+    ],
+)
+
+cc_binary(
     name = "ucb_vs_ucb",
     srcs = ["tests/ucb_vs_ucb.cc"],
     deps = [
