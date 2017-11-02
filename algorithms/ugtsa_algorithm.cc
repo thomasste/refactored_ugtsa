@@ -17,13 +17,12 @@ std::string UGTSAAlgorithm::DebugString() {
         "UGTSA statistics size: " + std::to_string(statistics.size()) + "\n" +
         "UGTSA updates size: " + std::to_string(updates.size()) + "\n" +
         "UGTSA move_rates size: " + std::to_string(move_rates.size()) + "\n" +
-        "UGTSA zero_statistic_gradients: " + std::to_string(zero_statistic_gradients_count) + "/" + std::to_string(statistics_count) + "\n" +
-        "UGTSA zero_update_gradients: " + std::to_string(zero_update_gradients_count) + "/" + std::to_string(updates_count) + "\n" +
-        "UGTSA zero_modified_statistic_gradients: " + std::to_string(zero_modified_statistic_gradients_count) + "/" + std::to_string(modified_statistics_count) + "\n" +
-        "UGTSA zero_modified_update_gradients: " + std::to_string(zero_modified_update_gradients_count) + "/" + std::to_string(modified_updates_count) + "\n" +
-        "UGTSA zero_move_rate_gradients: " + std::to_string(zero_move_rate_gradients_count) + "/" + std::to_string(move_rates_count);
+        "UGTSA zeros - statistics: " + std::to_string(zero_statistic_outputs_count) + "/" + std::to_string(zero_statistic_gradients_count) + "/" + std::to_string(statistics_count) + "\n" +
+        "UGTSA zeros - updates: " + std::to_string(zero_update_outputs_count) + "/" + std::to_string(zero_update_gradients_count) + "/" + std::to_string(updates_count) + "\n" +
+        "UGTSA zeros - modified_statistics: " + std::to_string(zero_modified_statistic_outputs_count) + "/" + std::to_string(zero_modified_statistic_gradients_count) + "/" + std::to_string(modified_statistics_count) + "\n" +
+        "UGTSA zeros - modified_updates: " + std::to_string(zero_modified_update_outputs_count) + "/" + std::to_string(zero_modified_update_gradients_count) + "/" + std::to_string(modified_updates_count) + "\n" +
+        "UGTSA zeros - move_rates: " + std::to_string(zero_move_rate_outputs_count) + "/" + std::to_string(zero_move_rate_gradients_count) + "/" + std::to_string(move_rates_count);
 }
-
 
 Eigen::VectorXf UGTSAAlgorithm::Value(int move_rate) {
     return move_rates[move_rate].value;
@@ -39,6 +38,7 @@ int UGTSAAlgorithm::Statistic() {
         training,
         VectorMatrixXf{boards.back()},
         VectorVectorXf{game_state_infos.back()})[0];
+    if ((statistics.back().value.array() == 0.).all()) zero_statistic_outputs_count++;
     return statistics.size() - 1;
 }
 
@@ -50,6 +50,7 @@ int UGTSAAlgorithm::Update() {
         updates.back().seed,
         training,
         VectorVectorXf{payoffs.back()})[0];
+    if ((updates.back().value.array() == 0.).all()) zero_update_outputs_count++;
     return updates.size() - 1;
 }
 
@@ -61,6 +62,7 @@ int UGTSAAlgorithm::ModifiedStatistic(int statistic, int update) {
         training,
         VectorVectorXf{statistics[statistic].value},
         std::vector<VectorVectorXf>{{updates[update].value}})[0];
+    if ((statistics.back().value.array() == 0.).all()) zero_modified_statistic_outputs_count++;
     return statistics.size() - 1;
 }
 
@@ -72,6 +74,7 @@ int UGTSAAlgorithm::ModifiedUpdate(int update, int statistic) {
         training,
         {updates[update].value},
         {statistics[statistic].value})[0];
+    if ((updates.back().value.array() == 0.).all()) zero_modified_update_outputs_count++;
     return updates.size() - 1;
 }
 
@@ -83,6 +86,7 @@ int UGTSAAlgorithm::MoveRate(int parent_statistic, int child_statistic) {
         training,
         {statistics[parent_statistic].value},
         {statistics[child_statistic].value})[0];
+    if ((move_rates.back().value.array() == 0.).all()) zero_move_rate_outputs_count++;
     return move_rates.size() - 1;
 }
 

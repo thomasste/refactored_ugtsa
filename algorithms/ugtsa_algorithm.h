@@ -80,6 +80,11 @@ private:
     int zero_modified_statistic_gradients_count = 0;
     int zero_modified_update_gradients_count = 0;
     int zero_move_rate_gradients_count = 0;
+    int zero_statistic_outputs_count = 0;
+    int zero_update_outputs_count = 0;
+    int zero_modified_statistic_outputs_count = 0;
+    int zero_modified_update_outputs_count = 0;
+    int zero_move_rate_outputs_count = 0;
 
     std::array<long long int, 2> Seed();
 
