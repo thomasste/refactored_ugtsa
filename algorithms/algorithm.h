@@ -20,6 +20,7 @@ public:
 
     virtual void Improve() = 0;
     virtual std::vector<int> MoveRates() = 0;
+    virtual std::string DebugString() = 0;
     virtual Eigen::VectorXf Value(int move_rate) = 0;
 };
 

@@ -81,5 +81,9 @@ std::vector<int> MCTSAlgorithm::MoveRates() {
     return result;
 }
 
+std::string MCTSAlgorithm::DebugString() {
+    return "MCTS tree size: " + std::to_string(tree.size());
+}
+
 }
 }

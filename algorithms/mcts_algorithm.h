@@ -27,6 +27,7 @@ public:
     void Improve();
     std::vector<int> MoveRates();
 
+    virtual std::string DebugString();
     virtual Eigen::VectorXf Value(int move_rate) = 0;
     virtual int Statistic() = 0;
     virtual int Update() = 0;

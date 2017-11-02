@@ -26,6 +26,7 @@ private:
 public:
     UCBAlgorithm(GameState *game_state, unsigned seed, int grow_factor, float exploration_factor);
 
+    std::string DebugString();
     Eigen::VectorXf Value(int move_rate);
     int Statistic();
     int Update();

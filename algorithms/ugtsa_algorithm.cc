@@ -12,6 +12,19 @@ std::array<long long int, 2> UGTSAAlgorithm::Seed() {
 UGTSAAlgorithm::UGTSAAlgorithm(GameState *game_state, unsigned seed, int grow_factor, TensorflowWrapper *tensorflow_wrapper, bool training)
         : MCTSAlgorithm(game_state, seed, grow_factor), tensorflow_wrapper(tensorflow_wrapper), training(training) {}
 
+std::string UGTSAAlgorithm::DebugString() {
+    return MCTSAlgorithm::DebugString() + "\n" +
+        "UGTSA statistics size: " + std::to_string(statistics.size()) + "\n" +
+        "UGTSA updates size: " + std::to_string(updates.size()) + "\n" +
+        "UGTSA move_rates size: " + std::to_string(move_rates.size()) + "\n" +
+        "UGTSA zero_statistic_gradients: " + std::to_string(zero_statistic_gradients_count) + "/" + std::to_string(statistics_count) + "\n" +
+        "UGTSA zero_update_gradients: " + std::to_string(zero_update_gradients_count) + "/" + std::to_string(updates_count) + "\n" +
+        "UGTSA zero_modified_statistic_gradients: " + std::to_string(zero_modified_statistic_gradients_count) + "/" + std::to_string(modified_statistics_count) + "\n" +
+        "UGTSA zero_modified_update_gradients: " + std::to_string(zero_modified_update_gradients_count) + "/" + std::to_string(modified_updates_count) + "\n" +
+        "UGTSA zero_move_rate_gradients: " + std::to_string(zero_move_rate_gradients_count) + "/" + std::to_string(move_rates_count);
+}
+
+
 Eigen::VectorXf UGTSAAlgorithm::Value(int move_rate) {
     return move_rates[move_rate].value;
 }
@@ -104,26 +117,37 @@ void UGTSAAlgorithm::Backpropagate(const std::vector<int> &move_rates_, const Ve
     for (auto oit = order.rbegin(); oit != order.rend(); oit++) {
         switch (*oit) {
             case Type::STATISTIC:
-                tensorflow_wrapper->BackpropagateStatistic(
-                    sit->seed,
-                    training,
-                    VectorMatrixXf{boards[sit->board]},
-                    VectorVectorXf{game_state_infos[sit->game_state_info]},
-                    VectorVectorXf{*sgit});
+                statistics_count++;
+                if (((sgit->array() != 0.).any())) {
+                    tensorflow_wrapper->BackpropagateStatistic(
+                        sit->seed,
+                        training,
+                        VectorMatrixXf{boards[sit->board]},
+                        VectorVectorXf{game_state_infos[sit->game_state_info]},
+                        VectorVectorXf{*sgit});
+                } else {
+                    zero_statistic_gradients_count++;
+                }
                 sit++;
                 sgit++;
                 break;
             case Type::UPDATE:
-                tensorflow_wrapper->BackpropagateUpdate(
-                    uit->seed,
-                    training,
-                    VectorVectorXf{payoffs[uit->payoff]},
-                    VectorVectorXf{*ugit});
+                updates_count++;
+                if (((ugit->array() != 0.).any())) {
+                    tensorflow_wrapper->BackpropagateUpdate(
+                        uit->seed,
+                        training,
+                        VectorVectorXf{payoffs[uit->payoff]},
+                        VectorVectorXf{*ugit});
+                } else {
+                    zero_update_gradients_count++;
+                }
                 uit++;
                 ugit++;
                 break;
             case Type::MODIFIED_STATISTIC:
-                {
+                modified_statistics_count++;
+                if (((sgit->array() != 0.).any())) {
                     auto result = tensorflow_wrapper->BackpropagateModifiedStatistic(
                         sit->seed,
                         training,
@@ -132,12 +156,15 @@ void UGTSAAlgorithm::Backpropagate(const std::vector<int> &move_rates_, const Ve
                         VectorVectorXf{*sgit});
                     statistic_gradients[sit->statistic] += result.first[0];
                     update_gradients[uit->update] += result.second[0][0];
-                    sit++;
-                    sgit++;
+                } else {
+                    zero_modified_statistic_gradients_count++;
                 }
+                sit++;
+                sgit++;
                 break;
             case Type::MODIFIED_UPDATE:
-                {
+                modified_updates_count++;
+                if (((ugit->array() != 0.).any())) {
                     auto result = tensorflow_wrapper->BackpropagateModifiedUpdate(
                         uit->seed,
                         training,
@@ -146,12 +173,15 @@ void UGTSAAlgorithm::Backpropagate(const std::vector<int> &move_rates_, const Ve
                         VectorVectorXf{*ugit});
                     update_gradients[uit->update] += result.first[0];
                     statistic_gradients[uit->statistic] += result.second[0];
-                    uit++;
-                    ugit++;
+                } else {
+                    zero_modified_update_gradients_count++;
                 }
+                uit++;
+                ugit++;
                 break;
             case Type::MOVE_RATE:
-                {
+                move_rates_count++;
+                if (((mgit->array() != 0.).any())) {
                     auto result = tensorflow_wrapper->BackpropagateMoveRate(
                         mit->seed,
                         training,
@@ -160,9 +190,11 @@ void UGTSAAlgorithm::Backpropagate(const std::vector<int> &move_rates_, const Ve
                         VectorVectorXf{*mgit});
                     statistic_gradients[mit->parent_statistic] += result.first[0];
                     statistic_gradients[mit->child_statistic] += result.second[0];
-                    mit++;
-                    mgit++;
+                } else {
+                    zero_move_rate_gradients_count++;
                 }
+                mit++;
+                mgit++;
                 break;
         }
     }

@@ -69,11 +69,24 @@ private:
 
     std::uniform_int_distribution<long long int> distribution;
 
+    // debug info
+    int statistics_count = 0;
+    int updates_count = 0;
+    int modified_statistics_count = 0;
+    int modified_updates_count = 0;
+    int move_rates_count = 0;
+    int zero_statistic_gradients_count = 0;
+    int zero_update_gradients_count = 0;
+    int zero_modified_statistic_gradients_count = 0;
+    int zero_modified_update_gradients_count = 0;
+    int zero_move_rate_gradients_count = 0;
+
     std::array<long long int, 2> Seed();
 
 public:
     UGTSAAlgorithm(GameState *game_state, unsigned seed, int grow_factor, TensorflowWrapper *tensorflow_wrapper, bool training);
 
+    std::string DebugString();
     Eigen::VectorXf Value(int move_rate);
     int Statistic();
     int Update();

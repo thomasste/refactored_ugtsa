@@ -10,6 +10,13 @@ float UCBAlgorithm::UCB(float pn, float cn, float w) {
 UCBAlgorithm::UCBAlgorithm(GameState *game_state, unsigned seed, int grow_factor, float exploration_factor)
         : MCTSAlgorithm(game_state, seed, grow_factor), exploration_factor(exploration_factor) {}
 
+std::string UCBAlgorithm::DebugString() {
+    return MCTSAlgorithm::DebugString() + "\n" +
+        "UCB statistics size: " + std::to_string(statistics.size()) + "\n" +
+        "UCB updates size: " + std::to_string(updates.size()) + "\n" +
+        "UCB move_rates size: " + std::to_string(move_rates.size());
+}
+
 Eigen::VectorXf UCBAlgorithm::Value(int move_rate) {
     return move_rates[move_rate];
 }

@@ -51,6 +51,16 @@ int main(int argc, char **argv) {
         }
     }
 
+    for (int i = 0; i < 20; i++) {
+        std::cout << labels[labels.size() - i - 1](0) << " " << labels[labels.size() - i - 1](1) << ", ";
+    }
+    std::cout << std::endl;
+
+    for (int i = 0; i < 20; i++) {
+        std::cout << logits[logits.size() - i - 1](0) << " " << logits[logits.size() - i - 1](1) << ", ";
+    }
+    std::cout << std::endl;
+
     auto loss = tensorflow_wrapper.CostFunction(logits, labels);
     std::cout << "loss: " << loss << std::endl;
 
@@ -60,8 +70,10 @@ int main(int argc, char **argv) {
     ugtsa_algorithm.Backpropagate(ugtsa_move_rates, logits_gradients);
     tensorflow_wrapper.ApplyGradients();
     tensorflow_wrapper.SetUntrainableModel(untrainable_model);
+    // tensorflow_wrapper.SaveModel();
 
-    tensorflow_wrapper.SaveModel();
+    std::cout << ucb_algorithm.DebugString() << std::endl;
+    std::cout << ugtsa_algorithm.DebugString() << std::endl;
 
     return 0;
 }
