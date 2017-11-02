@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     ugtsa_algorithm.Backpropagate(ugtsa_move_rates, logits_gradients);
     tensorflow_wrapper.ApplyGradients();
     tensorflow_wrapper.SetUntrainableModel(untrainable_model);
-    // tensorflow_wrapper.SaveModel();
+    tensorflow_wrapper.SaveModel();
 
     std::cout << ucb_algorithm.DebugString() << std::endl;
     std::cout << ugtsa_algorithm.DebugString() << std::endl;

@@ -13,26 +13,6 @@ UGTSAAlgorithm::UGTSAAlgorithm(GameState *game_state, unsigned seed, int grow_fa
         : MCTSAlgorithm(game_state, seed, grow_factor), tensorflow_wrapper(tensorflow_wrapper), training(training) {}
 
 std::string UGTSAAlgorithm::DebugString() {
-    // std::cout << "statistics" << std::endl;
-    // for (int i = 0; i < statistics.size(); i++) {
-    //     if (statistics[i].type == Type::STATISTIC)
-    //         std::cout << i << ": leaf" << std::endl;
-    //     if (statistics[i].type == Type::MODIFIED_STATISTIC)
-    //         std::cout << i << ": s" << statistics[i].statistic << " u" << statistics[i].update << std::endl;
-    // }
-    // std::cout << "updates" << std::endl;
-    // for (int i = 0; i < updates.size(); i++) {
-    //     if (updates[i].type == Type::UPDATE) {
-    //         std::cout << i << ": leaf" << std::endl;
-    //     } else {
-    //         std::cout << i << ": u" << updates[i].update << " s" << updates[i].statistic << std::endl;
-    //     }
-    // }
-    // std::cout << "move_rates" << std::endl;
-    // for (int i = 0; i < move_rates.size(); i++) {
-    //     std::cout << i << ": s" << move_rates[i].parent_statistic << " " << move_rates[i].child_statistic << std::endl;
-    // }
-
     return MCTSAlgorithm::DebugString() + "\n" +
         "UGTSA statistics size: " + std::to_string(statistics.size()) + "\n" +
         "UGTSA updates size: " + std::to_string(updates.size()) + "\n" +
@@ -58,7 +38,7 @@ int UGTSAAlgorithm::Statistic() {
         training,
         VectorMatrixXf{boards.back()},
         VectorVectorXf{game_state_infos.back()})[0];
-    if ((statistics.back().value.array() == 0.).all()) zero_statistic_outputs_count++;
+    // if ((statistics.back().value.array() == 0.).all()) zero_statistic_outputs_count++;
     return statistics.size() - 1;
 }
 
@@ -70,7 +50,7 @@ int UGTSAAlgorithm::Update() {
         updates.back().seed,
         training,
         VectorVectorXf{payoffs.back()})[0];
-    if ((updates.back().value.array() == 0.).all()) zero_update_outputs_count++;
+    // if ((updates.back().value.array() == 0.).all()) zero_update_outputs_count++;
     return updates.size() - 1;
 }
 
@@ -82,7 +62,7 @@ int UGTSAAlgorithm::ModifiedStatistic(int statistic, int update) {
         training,
         VectorVectorXf{statistics[statistic].value},
         std::vector<VectorVectorXf>{{updates[update].value}})[0];
-    if ((statistics.back().value.array() == 0.).all()) zero_modified_statistic_outputs_count++;
+    // if ((statistics.back().value.array() == 0.).all()) zero_modified_statistic_outputs_count++;
     return statistics.size() - 1;
 }
 
@@ -94,7 +74,7 @@ int UGTSAAlgorithm::ModifiedUpdate(int update, int statistic) {
         training,
         {updates[update].value},
         {statistics[statistic].value})[0];
-    if ((updates.back().value.array() == 0.).all()) zero_modified_update_outputs_count++;
+    // if ((updates.back().value.array() == 0.).all()) zero_modified_update_outputs_count++;
     return updates.size() - 1;
 }
 
@@ -106,7 +86,7 @@ int UGTSAAlgorithm::MoveRate(int parent_statistic, int child_statistic) {
         training,
         {statistics[parent_statistic].value},
         {statistics[child_statistic].value})[0];
-    if ((move_rates.back().value.array() == 0.).all()) zero_move_rate_outputs_count++;
+    // if ((move_rates.back().value.array() == 0.).all()) zero_move_rate_outputs_count++;
     return move_rates.size() - 1;
 }
 
@@ -141,84 +121,94 @@ void UGTSAAlgorithm::Backpropagate(const std::vector<int> &move_rates_, const Ve
     for (auto oit = order.rbegin(); oit != order.rend(); oit++) {
         switch (*oit) {
             case Type::STATISTIC:
-                statistics_count++;
-                if (((sgit->array() != 0.).any())) {
-                    tensorflow_wrapper->BackpropagateStatistic(
-                        sit->seed,
-                        training,
-                        VectorMatrixXf{boards[sit->board]},
-                        VectorVectorXf{game_state_infos[sit->game_state_info]},
-                        VectorVectorXf{*sgit});
-                } else {
-                    zero_statistic_gradients_count++;
+                {
+                    statistics_count++;
+                    // if (((sgit->array() != 0.).any())) {
+                        tensorflow_wrapper->BackpropagateStatistic(
+                            sit->seed,
+                            training,
+                            VectorMatrixXf{boards[sit->board]},
+                            VectorVectorXf{game_state_infos[sit->game_state_info]},
+                            VectorVectorXf{*sgit});
+                    // } else {
+                    //     zero_statistic_gradients_count++;
+                    // }
+                    sit++;
+                    sgit++;
                 }
-                sit++;
-                sgit++;
                 break;
             case Type::UPDATE:
-                updates_count++;
-                if (((ugit->array() != 0.).any())) {
-                    tensorflow_wrapper->BackpropagateUpdate(
-                        uit->seed,
-                        training,
-                        VectorVectorXf{payoffs[uit->payoff]},
-                        VectorVectorXf{*ugit});
-                } else {
-                    zero_update_gradients_count++;
+                {
+                    updates_count++;
+                    // if (((ugit->array() != 0.).any())) {
+                        tensorflow_wrapper->BackpropagateUpdate(
+                            uit->seed,
+                            training,
+                            VectorVectorXf{payoffs[uit->payoff]},
+                            VectorVectorXf{*ugit});
+                    // } else {
+                    //     zero_update_gradients_count++;
+                    // }
+                    uit++;
+                    ugit++;
                 }
-                uit++;
-                ugit++;
                 break;
             case Type::MODIFIED_STATISTIC:
-                modified_statistics_count++;
-                if (((sgit->array() != 0.).any())) {
-                    auto result = tensorflow_wrapper->BackpropagateModifiedStatistic(
-                        sit->seed,
-                        training,
-                        VectorVectorXf{statistics[sit->statistic].value},
-                        std::vector<VectorVectorXf>{{updates[sit->update].value}},
-                        VectorVectorXf{*sgit});
-                    statistic_gradients[sit->statistic] += result.first[0];
-                    update_gradients[sit->update] += result.second[0][0];
-                } else {
-                    zero_modified_statistic_gradients_count++;
+                {
+                    modified_statistics_count++;
+                    // if (((sgit->array() != 0.).any())) {
+                        auto result = tensorflow_wrapper->BackpropagateModifiedStatistic(
+                            sit->seed,
+                            training,
+                            VectorVectorXf{statistics[sit->statistic].value},
+                            std::vector<VectorVectorXf>{{updates[sit->update].value}},
+                            VectorVectorXf{*sgit});
+                        statistic_gradients[sit->statistic] += result.first[0];
+                        update_gradients[sit->update] += result.second[0][0];
+                    // } else {
+                    //     zero_modified_statistic_gradients_count++;
+                    // }
+                    sit++;
+                    sgit++;
                 }
-                sit++;
-                sgit++;
                 break;
             case Type::MODIFIED_UPDATE:
-                modified_updates_count++;
-                if (((ugit->array() != 0.).any())) {
-                    auto result = tensorflow_wrapper->BackpropagateModifiedUpdate(
-                        uit->seed,
-                        training,
-                        VectorVectorXf{updates[uit->update].value},
-                        VectorVectorXf{statistics[uit->statistic].value},
-                        VectorVectorXf{*ugit});
-                    update_gradients[uit->update] += result.first[0];
-                    statistic_gradients[uit->statistic] += result.second[0];
-                } else {
-                    zero_modified_update_gradients_count++;
+                {
+                    modified_updates_count++;
+                    // if (((ugit->array() != 0.).any())) {
+                        auto result = tensorflow_wrapper->BackpropagateModifiedUpdate(
+                            uit->seed,
+                            training,
+                            VectorVectorXf{updates[uit->update].value},
+                            VectorVectorXf{statistics[uit->statistic].value},
+                            VectorVectorXf{*ugit});
+                        update_gradients[uit->update] += result.first[0];
+                        statistic_gradients[uit->statistic] += result.second[0];
+                    // } else {
+                    //     zero_modified_update_gradients_count++;
+                    // }
+                    uit++;
+                    ugit++;
                 }
-                uit++;
-                ugit++;
                 break;
             case Type::MOVE_RATE:
-                move_rates_count++;
-                if (((mgit->array() != 0.).any())) {
-                    auto result = tensorflow_wrapper->BackpropagateMoveRate(
-                        mit->seed,
-                        training,
-                        VectorVectorXf{statistics[mit->parent_statistic].value},
-                        VectorVectorXf{statistics[mit->child_statistic].value},
-                        VectorVectorXf{*mgit});
-                    statistic_gradients[mit->parent_statistic] += result.first[0];
-                    statistic_gradients[mit->child_statistic] += result.second[0];
-                } else {
-                    zero_move_rate_gradients_count++;
+                {
+                    move_rates_count++;
+                    // if (((mgit->array() != 0.).any())) {
+                        auto result = tensorflow_wrapper->BackpropagateMoveRate(
+                            mit->seed,
+                            training,
+                            VectorVectorXf{statistics[mit->parent_statistic].value},
+                            VectorVectorXf{statistics[mit->child_statistic].value},
+                            VectorVectorXf{*mgit});
+                        statistic_gradients[mit->parent_statistic] += result.first[0];
+                        statistic_gradients[mit->child_statistic] += result.second[0];
+                    // } else {
+                    //     zero_move_rate_gradients_count++;
+                    // }
+                    mit++;
+                    mgit++;
                 }
-                mit++;
-                mgit++;
                 break;
         }
     }
