@@ -39,7 +39,9 @@ int main(int argc, char **argv) {
     VectorVectorXf logits;
     for (int i = 0; i < ugtsa_strength; i++) {
         //std::cout << "iteration: " << i << std::endl;
-        for (int j = 0; j < ucb_strength_multiplier; j++) ucb_algorithm.Improve();
+        for (int j = 0; j < ucb_strength_multiplier; j++) {
+            ucb_algorithm.Improve();
+        }
         ugtsa_algorithm.Improve();
 
         for (int move_rate : ucb_algorithm.MoveRates()) {
@@ -51,18 +53,19 @@ int main(int argc, char **argv) {
         }
     }
 
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 20 && i < labels.size(); i++) {
         std::cout << labels[labels.size() - i - 1](0) << " " << labels[labels.size() - i - 1](1) << ", ";
     }
     std::cout << std::endl;
 
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 20 && i < logits.size(); i++) {
         std::cout << logits[logits.size() - i - 1](0) << " " << logits[logits.size() - i - 1](1) << ", ";
     }
     std::cout << std::endl;
 
     auto loss = tensorflow_wrapper.CostFunction(logits, labels);
     std::cout << "loss: " << loss << std::endl;
+
 
     auto untrainable_model = tensorflow_wrapper.GetUntrainableModel();
     tensorflow_wrapper.ZeroGradientAccumulators();

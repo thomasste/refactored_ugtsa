@@ -59,10 +59,11 @@ void MCTSAlgorithm::Improve() {
 
         while(!state_stack.empty()) {
             auto &node = tree[state_stack.back()];
-            node.statistic = ModifiedStatistic(node.statistic, update);
-            update = ModifiedUpdate(update, node.statistic);
+            auto statistic = node.statistic;
+            node.statistic = ModifiedStatistic(statistic, update);
             state_stack.pop_back();
             if (state_stack.size() > 0) {
+                update = ModifiedUpdate(update, statistic);
                 game_state->UndoMove();
             }
         }

@@ -20,6 +20,8 @@ private:
     };
 
     struct Statistic_ {
+        Type type;
+
         std::array<long long int, 2> seed;
         Eigen::VectorXf value;
 
@@ -35,6 +37,8 @@ private:
     };
 
     struct Update_ {
+        Type type;
+
         std::array<long long int, 2> seed;
         Eigen::VectorXf value;
 
@@ -47,6 +51,8 @@ private:
     };
 
     struct MoveRate_ {
+        Type type;
+
         std::array<long long int, 2> seed;
         Eigen::VectorXf value;
 

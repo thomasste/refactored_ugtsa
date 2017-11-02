@@ -13,6 +13,26 @@ UGTSAAlgorithm::UGTSAAlgorithm(GameState *game_state, unsigned seed, int grow_fa
         : MCTSAlgorithm(game_state, seed, grow_factor), tensorflow_wrapper(tensorflow_wrapper), training(training) {}
 
 std::string UGTSAAlgorithm::DebugString() {
+    // std::cout << "statistics" << std::endl;
+    // for (int i = 0; i < statistics.size(); i++) {
+    //     if (statistics[i].type == Type::STATISTIC)
+    //         std::cout << i << ": leaf" << std::endl;
+    //     if (statistics[i].type == Type::MODIFIED_STATISTIC)
+    //         std::cout << i << ": s" << statistics[i].statistic << " u" << statistics[i].update << std::endl;
+    // }
+    // std::cout << "updates" << std::endl;
+    // for (int i = 0; i < updates.size(); i++) {
+    //     if (updates[i].type == Type::UPDATE) {
+    //         std::cout << i << ": leaf" << std::endl;
+    //     } else {
+    //         std::cout << i << ": u" << updates[i].update << " s" << updates[i].statistic << std::endl;
+    //     }
+    // }
+    // std::cout << "move_rates" << std::endl;
+    // for (int i = 0; i < move_rates.size(); i++) {
+    //     std::cout << i << ": s" << move_rates[i].parent_statistic << " " << move_rates[i].child_statistic << std::endl;
+    // }
+
     return MCTSAlgorithm::DebugString() + "\n" +
         "UGTSA statistics size: " + std::to_string(statistics.size()) + "\n" +
         "UGTSA updates size: " + std::to_string(updates.size()) + "\n" +
@@ -32,7 +52,7 @@ int UGTSAAlgorithm::Statistic() {
     order.push_back(Type::STATISTIC);
     boards.push_back(game_state->Board());
     game_state_infos.push_back(game_state->Info());
-    statistics.push_back(Statistic_{Seed(), {}, (int) boards.size() - 1, (int) game_state_infos.size() - 1});
+    statistics.push_back({Type::STATISTIC, Seed(), {}, (int) boards.size() - 1, (int) game_state_infos.size() - 1});
     statistics.back().value = tensorflow_wrapper->Statistic(
         statistics.back().seed,
         training,
@@ -45,7 +65,7 @@ int UGTSAAlgorithm::Statistic() {
 int UGTSAAlgorithm::Update() {
     order.push_back(Type::UPDATE);
     payoffs.push_back(game_state->LightPlayoutPayoff());
-    updates.push_back({Seed(), {}, (int) payoffs.size() - 1, -100});
+    updates.push_back({Type::UPDATE, Seed(), {}, (int) payoffs.size() - 1, -100});
     updates.back().value = tensorflow_wrapper->Update(
         updates.back().seed,
         training,
@@ -56,7 +76,7 @@ int UGTSAAlgorithm::Update() {
 
 int UGTSAAlgorithm::ModifiedStatistic(int statistic, int update) {
     order.push_back(Type::MODIFIED_STATISTIC);
-    statistics.push_back({Seed(), {}, statistic, update});
+    statistics.push_back({Type::MODIFIED_STATISTIC, Seed(), {}, statistic, update});
     statistics.back().value = tensorflow_wrapper->ModifiedStatistic(
         statistics.back().seed,
         training,
@@ -68,7 +88,7 @@ int UGTSAAlgorithm::ModifiedStatistic(int statistic, int update) {
 
 int UGTSAAlgorithm::ModifiedUpdate(int update, int statistic) {
     order.push_back(Type::MODIFIED_UPDATE);
-    updates.push_back({Seed(), {}, update, statistic});
+    updates.push_back({Type::MODIFIED_UPDATE, Seed(), {}, update, statistic});
     updates.back().value = tensorflow_wrapper->ModifiedUpdate(
         updates.back().seed,
         training,
@@ -80,7 +100,7 @@ int UGTSAAlgorithm::ModifiedUpdate(int update, int statistic) {
 
 int UGTSAAlgorithm::MoveRate(int parent_statistic, int child_statistic) {
     order.push_back(Type::MOVE_RATE);
-    move_rates.push_back({Seed(), {}, parent_statistic, child_statistic});
+    move_rates.push_back({Type::MOVE_RATE, Seed(), {}, parent_statistic, child_statistic});
     move_rates.back().value = tensorflow_wrapper->MoveRate(
         move_rates.back().seed,
         training,
@@ -159,7 +179,7 @@ void UGTSAAlgorithm::Backpropagate(const std::vector<int> &move_rates_, const Ve
                         std::vector<VectorVectorXf>{{updates[sit->update].value}},
                         VectorVectorXf{*sgit});
                     statistic_gradients[sit->statistic] += result.first[0];
-                    update_gradients[uit->update] += result.second[0][0];
+                    update_gradients[sit->update] += result.second[0][0];
                 } else {
                     zero_modified_statistic_gradients_count++;
                 }

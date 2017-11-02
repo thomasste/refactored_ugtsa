@@ -1,5 +1,7 @@
 #include "refactored_ugtsa/algorithms/ucb_algorithm.h"
 
+#include <iostream>
+
 namespace ugtsa {
 namespace algorithms {
 
