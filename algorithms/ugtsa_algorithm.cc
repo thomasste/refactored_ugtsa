@@ -90,12 +90,16 @@ int UGTSAAlgorithm::MoveRate(int parent_statistic, int child_statistic) {
     return move_rates.size() - 1;
 }
 
-Eigen::VectorXf UGTSAAlgorithm::UntrackedMoveRate(int parent_statistic, int child_statistic) {
+VectorVectorXf UGTSAAlgorithm::UntrackedMoveRates(const std::vector<int> &parent_statistics, const std::vector<int> &child_statistics) {
+    auto parent_statistic_values = VectorVectorXf();
+    auto child_statistic_values = VectorVectorXf();
+    for (auto x : parent_statistics) parent_statistic_values.push_back(statistics[x].value);
+    for (auto x : child_statistics) child_statistic_values.push_back(statistics[x].value);
     return tensorflow_wrapper->MoveRate(
         Seed(),
         false,
-        {statistics[parent_statistic].value},
-        {statistics[child_statistic].value})[0];
+        parent_statistic_values,
+        child_statistic_values);
 }
 
 void UGTSAAlgorithm::Backpropagate(const std::vector<int> &move_rates_, const VectorVectorXf &move_rate_gradients_) {

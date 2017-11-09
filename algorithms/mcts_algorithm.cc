@@ -27,14 +27,23 @@ void MCTSAlgorithm::Improve() {
                 move = std::uniform_int_distribution<int>(0, node.children[1] - node.children[0] - 1)(generator);
             } else {
                 auto &parent_statistic = tree[state_stack.back()].statistic;
-                auto best_rate = -std::numeric_limits<float>::infinity();
 
+                auto parent_statistics = std::vector<int>();
+                auto child_statistics = std::vector<int>();
                 for (auto i = node.children[0]; i < node.children[1]; i++) {
                     auto &child_statistic = tree[i].statistic;
-                    auto move_rate = UntrackedMoveRate(parent_statistic, child_statistic)(game_state->player);
+                    parent_statistics.push_back(parent_statistic);
+                    child_statistics.push_back(child_statistic);
+                }
+
+                auto best_rate = -std::numeric_limits<float>::infinity();
+                auto move_rates = UntrackedMoveRates(parent_statistics, child_statistics);
+
+                for (auto i = 0; i < move_rates.size(); i++) {
+                    auto move_rate = move_rates[i](game_state->player);
                     if (best_rate < move_rate) {
                         best_rate = move_rate;
-                        move = i - node.children[0];
+                        move = i;
                     }
                 }
             }

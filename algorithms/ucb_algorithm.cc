@@ -67,8 +67,12 @@ int UCBAlgorithm::MoveRate(int parent_statistic, int child_statistic) {
     return move_rates.size() - 1;
 }
 
-Eigen::VectorXf UCBAlgorithm::UntrackedMoveRate(int parent_statistic, int child_statistic) {
-    return Value(MoveRate(parent_statistic, child_statistic));
+VectorVectorXf UCBAlgorithm::UntrackedMoveRates(const std::vector<int> &parent_statistics, const std::vector<int> &child_statistics) {
+    auto result = VectorVectorXf();
+    for (int i = 0; i < parent_statistics.size(); i++) {
+        result.push_back(Value(MoveRate(parent_statistics[i], child_statistics[i])));
+    }
+    return result;
 }
 
 }
