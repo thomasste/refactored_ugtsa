@@ -8,10 +8,8 @@ class ModelBuilder:
                  payoff_size, player_count, worker_count):
         self.statistic_size = statistic_size
         self.update_size = update_size
-        self.board_shape = \
-            board_shape
-        self.game_state_info_size = \
-            game_state_info_size
+        self.board_shape = board_shape
+        self.game_state_info_size = game_state_info_size
         self.payoff_size = payoff_size
         self.player_count = player_count
         self.worker_count = worker_count
@@ -104,7 +102,8 @@ class ModelBuilder:
 
             for (input_name, _), gradient in zip(
                     trainable_placeholders, gradients):
-                tf.identity(gradient, '{}_gradient'.format(input_name))
+                if gradient is not None:
+                    tf.identity(gradient, '{}_gradient'.format(input_name))
 
     def build(self):
         methods = {
