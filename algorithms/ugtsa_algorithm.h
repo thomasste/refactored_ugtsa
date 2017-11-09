@@ -62,6 +62,7 @@ private:
 
     TensorflowWrapper *tensorflow_wrapper;
     bool training;
+    bool use_heavy_playouts;
 
     VectorMatrixXf boards;
     VectorVectorXf game_state_infos;
@@ -95,7 +96,7 @@ private:
     std::array<long long int, 2> Seed();
 
 public:
-    UGTSAAlgorithm(GameState *game_state, unsigned seed, int grow_factor, TensorflowWrapper *tensorflow_wrapper, bool training);
+    UGTSAAlgorithm(GameState *game_state, unsigned seed, int grow_factor, TensorflowWrapper *tensorflow_wrapper, bool training, bool use_heavy_playouts);
 
     std::string DebugString();
     Eigen::VectorXf Value(int move_rate);
@@ -107,6 +108,7 @@ public:
     VectorVectorXf UntrackedMoveRates(const std::vector<int> &parent_statistics, const std::vector<int> &child_statistics);
 
     void Backpropagate(const std::vector<int> &move_rates_, const VectorVectorXf &move_rate_gradients_);
+    Eigen::VectorXf HeavyPlayoutPayoff();
 };
 
 }

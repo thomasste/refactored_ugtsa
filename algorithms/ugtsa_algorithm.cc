@@ -9,8 +9,8 @@ std::array<long long int, 2> UGTSAAlgorithm::Seed() {
     return { distribution(generator), distribution(generator) };
 }
 
-UGTSAAlgorithm::UGTSAAlgorithm(GameState *game_state, unsigned seed, int grow_factor, TensorflowWrapper *tensorflow_wrapper, bool training)
-        : MCTSAlgorithm(game_state, seed, grow_factor), tensorflow_wrapper(tensorflow_wrapper), training(training) {}
+UGTSAAlgorithm::UGTSAAlgorithm(GameState *game_state, unsigned seed, int grow_factor, TensorflowWrapper *tensorflow_wrapper, bool training, bool use_heavy_playouts)
+        : MCTSAlgorithm(game_state, seed, grow_factor), tensorflow_wrapper(tensorflow_wrapper), training(training), use_heavy_playouts(use_heavy_playouts) {}
 
 std::string UGTSAAlgorithm::DebugString() {
     return MCTSAlgorithm::DebugString() + "\n" +
@@ -44,7 +44,7 @@ int UGTSAAlgorithm::Statistic() {
 
 int UGTSAAlgorithm::Update() {
     order.push_back(Type::UPDATE);
-    payoffs.push_back(game_state->LightPlayoutPayoff());
+    payoffs.push_back(use_heavy_playouts ? HeavyPlayoutPayoff() : game_state->LightPlayoutPayoff());
     updates.push_back({Type::UPDATE, Seed(), {}, (int) payoffs.size() - 1, -100});
     updates.back().value = tensorflow_wrapper->Update(
         updates.back().seed,
@@ -216,6 +216,69 @@ void UGTSAAlgorithm::Backpropagate(const std::vector<int> &move_rates_, const Ve
                 break;
         }
     }
+}
+
+Eigen::VectorXf UGTSAAlgorithm::HeavyPlayoutPayoff() {
+    int counter = 0;
+
+    while (!game_state->IsFinal()) {
+        auto move_count = game_state->MoveCount();
+        int move;
+
+        if (game_state->player == -1) {
+            move = std::uniform_int_distribution<int>(0, move_count - 1)(generator);
+        } else {
+            auto boards = VectorMatrixXf();
+            auto game_state_infos = VectorVectorXf();
+            for (int i = 0; i < move_count; i++) {
+                game_state->ApplyMove(i);
+                boards.push_back(game_state->Board());
+                game_state_infos.push_back(game_state->Info());
+                game_state->UndoMove();
+            }
+            boards.push_back(game_state->Board());
+            game_state_infos.push_back(game_state->Info());
+
+            auto statistics = tensorflow_wrapper->Statistic(
+                Seed(),
+                false,
+                boards,
+                game_state_infos);
+
+            auto parent_statistics = VectorVectorXf();
+            auto child_statistics = VectorVectorXf();
+            for (int i = 0; i < move_count; i++) {
+                parent_statistics.push_back(statistics.back());
+                child_statistics.push_back(statistics[i]);
+            }
+
+            auto move_rates = tensorflow_wrapper->MoveRate(
+                Seed(),
+                false,
+                parent_statistics,
+                child_statistics);
+
+            auto best_rate = -std::numeric_limits<float>::infinity();
+            for (auto i = 0; i < move_count; i++) {
+                auto move_rate = move_rates[i](game_state->player);
+                if (best_rate < move_rate) {
+                    best_rate = move_rate;
+                    move = i;
+                }
+            }
+        }
+
+        game_state->ApplyMove(move);
+        counter++;
+    }
+
+    auto payoff = game_state->Payoff();
+
+    for (int i = 0; i < counter; i++) {
+        game_state->UndoMove();
+    }
+
+    return payoff;
 }
 
 }

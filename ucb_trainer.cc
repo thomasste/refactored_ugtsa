@@ -15,6 +15,7 @@ int main(int argc, char **argv) {
     auto graph_name = std::string(argv[1]);
     auto ugtsa_strength = std::atoi(argv[2]);
     auto ucb_strength_multiplier = std::atoi(argv[3]);
+    auto use_heavy_playouts = (bool) std::atoi(argv[4]);
 
     auto tensorflow_wrapper = TensorflowWrapper(graph_name, -1);
 
@@ -32,7 +33,7 @@ int main(int argc, char **argv) {
     std::cout << game_state.Board() << std::endl;
 
     auto ucb_algorithm = UCBAlgorithm(&game_state, seed, 5, std::sqrt(2.));
-    auto ugtsa_algorithm = UGTSAAlgorithm(&game_state, seed, 5, &tensorflow_wrapper, true);
+    auto ugtsa_algorithm = UGTSAAlgorithm(&game_state, seed, 5, &tensorflow_wrapper, true, use_heavy_playouts);
 
     VectorVectorXf labels;
     std::vector<int> ugtsa_move_rates;
