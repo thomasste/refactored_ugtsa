@@ -6,6 +6,7 @@ argument_parser = argparse.ArgumentParser()
 argument_parser.add_argument('game', type=str)
 argument_parser.add_argument('model', type=str)
 argument_parser.add_argument('worker_count', type=int)
+argument_parser.add_argument('suffix', type=str)
 
 args = argument_parser.parse_args()
 
@@ -18,8 +19,8 @@ model_builder.build()
 with tf.Session() as session:
     session.run(tf.global_variables_initializer())
 
-    graph_name = '{}__{}__{}'.format(
-        args.game, args.model, args.worker_count)
+    graph_name = '{}__{}__{}__{}'.format(
+        args.game, args.model, args.worker_count, args.suffix)
     model_name = '{}.0'.format(graph_name)
 
     saver = tf.train.Saver()

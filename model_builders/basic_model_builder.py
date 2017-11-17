@@ -37,9 +37,6 @@ class BasicModelBuilder(ModelBuilder):
             move_rate_hidden_output_sizes
 
     def statistic(self, rng, training, board, game_state_info):
-        # make get set untrainable variables happy
-        tf.Variable(0., trainable=False)
-
         signal = tf.expand_dims(board, -1)
         print(signal.get_shape())
 

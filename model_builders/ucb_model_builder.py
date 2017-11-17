@@ -16,9 +16,6 @@ class UCBModelBuilder(ModelBuilder):
         self.worker_count = worker_count
 
     def statistic(self, rng, training, board, game_state_info):
-        # make get set untrainable variables happy
-        tf.Variable(0., trainable=False)
-
         zeros_dims = tf.stack(
             [tf.shape(game_state_info)[0], self.player_count + 1])
         return tf.fill(zeros_dims, 0.0)

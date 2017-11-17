@@ -367,7 +367,7 @@ class ModelBuilder:
                 tf.GraphKeys.GLOBAL_VARIABLES,
                 '{}/transformation'.format(key.__name__))
             if variable not in tf.get_collection(
-                tf.GraphKeys.TRAINABLE_VARIABLES)]
+                tf.GraphKeys.TRAINABLE_VARIABLES)] + [tf.Variable(0., trainable=False)]
 
         print(untrainable_variables)
 
