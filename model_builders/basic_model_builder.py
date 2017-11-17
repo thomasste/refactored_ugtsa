@@ -8,6 +8,7 @@ class BasicModelBuilder(ModelBuilder):
     def __init__(self, statistic_size, update_size,
                  board_shape, game_state_info_size,
                  payoff_size, player_count, worker_count,
+                 normalize,
                  statistic_filter_shapes,
                  statistic_window_shapes,
                  statistic_hidden_output_sizes,
@@ -19,6 +20,8 @@ class BasicModelBuilder(ModelBuilder):
             statistic_size, update_size,
             board_shape, game_state_info_size,
             payoff_size, player_count, worker_count)
+
+        self.normalize = normalize
 
         self.statistic_filter_shapes = statistic_filter_shapes
         self.statistic_window_shapes = statistic_window_shapes
@@ -34,6 +37,9 @@ class BasicModelBuilder(ModelBuilder):
             move_rate_hidden_output_sizes
 
     def statistic(self, rng, training, board, game_state_info):
+        # make get set untrainable variables happy
+        tf.Variable(0., trainable=False)
+
         signal = tf.expand_dims(board, -1)
         print(signal.get_shape())
 
@@ -41,7 +47,8 @@ class BasicModelBuilder(ModelBuilder):
             training,
             self.statistic_filter_shapes,
             self.statistic_window_shapes,
-            signal)
+            signal,
+            self.normalize)
 
         signal = tf.reshape(
             signal, (-1, np.prod(signal.get_shape().as_list()[1:])))
@@ -50,16 +57,18 @@ class BasicModelBuilder(ModelBuilder):
         signal = tf.concat([signal, game_state_info], axis=1)
         print(signal.get_shape())
 
-        return dense_neural_network_with_layer_norm(
+        return dense_neural_network(
             rng, training, 0.5,
             self.statistic_hidden_output_sizes + [self.statistic_size],
-            signal)
+            signal,
+            self.normalize)
 
     def update(self, rng, training, payoff):
-        return dense_neural_network_with_layer_norm(
+        return dense_neural_network(
             rng, training, 0.5,
             self.update_hidden_output_sizes + [self.update_size],
-            payoff)
+            payoff,
+            self.normalize)
 
     def modified_statistic(
             self, rng, training, statistic, updates_count, updates):
@@ -83,9 +92,9 @@ class BasicModelBuilder(ModelBuilder):
                     print(input.get_shape(), c.get_shape(), h.get_shape())
                     input, lstm_state = cell(input, [c, h])
                     ncs += [tf.where(
-                        updates_count > i, layer_norm(lstm_state.c), c)]
+                        updates_count > i, layer_norm(lstm_state.c) if self.normalize else lstm_state.c, c)]
                     nhs += [tf.where(
-                        updates_count > i, layer_norm(lstm_state.h), h)]
+                        updates_count > i, layer_norm(lstm_state.h) if self.normalize else lstm_state.h, h)]
 
             return [i + 1, ncs, nhs, updates]
 
@@ -102,16 +111,17 @@ class BasicModelBuilder(ModelBuilder):
     def modified_update(self, rng, training, update, statistic):
         signal = tf.concat([update, statistic], axis=1)
         print(signal.get_shape())
-        return dense_neural_network_with_layer_norm(
+        return dense_neural_network(
             rng, training, 0.5,
             self.modified_update_hidden_output_sizes + [self.update_size],
-            signal)
+            signal,
+            self.normalize)
 
     def move_rate(self, rng, training, parent_statistic, child_statistic):
         signal = tf.concat([parent_statistic, child_statistic], axis=1)
         print(signal.get_shape())
-        signal = dense_neural_network_with_layer_norm(
-            rng, training, 0.5, self.move_rate_hidden_output_sizes, signal)
+        signal = dense_neural_network(
+            rng, training, 0.5, self.move_rate_hidden_output_sizes, signal, self.normalize)
         signal = dense_layer(self.player_count, signal)
         signal = bias_layer(signal)
         print(signal.get_shape())

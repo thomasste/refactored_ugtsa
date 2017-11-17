@@ -4,7 +4,7 @@ from tensorflow.contrib.layers import layer_norm
 
 
 class VerticalLSTMModelBuilder(ModelBuilder):
-    def __init__(self, model_builder, modified_update_lstm_state_sizes):
+    def __init__(self, model_builder, normalize, modified_update_lstm_state_sizes):
         super().__init__(
             model_builder.statistic_size, model_builder.update_size,
             model_builder.board_shape, model_builder.game_state_info_size,
@@ -12,6 +12,7 @@ class VerticalLSTMModelBuilder(ModelBuilder):
             model_builder.worker_count)
 
         self.model_builder = model_builder
+        self.normalize = normalize
         self.modified_update_lstm_state_sizes = \
             modified_update_lstm_state_sizes
 
@@ -44,8 +45,8 @@ class VerticalLSTMModelBuilder(ModelBuilder):
                 cell = tf.contrib.rnn.LSTMCell(state_size)
                 print(input.get_shape(), c.get_shape(), h.get_shape())
                 input, lstm_state = cell(input, [c, h])
-                ncs += [layer_norm(lstm_state.c)]
-                nhs += [layer_norm(lstm_state.h)]
+                ncs += [layer_norm(lstm_state.c) if self.normalize else lstm_state.c]
+                nhs += [layer_norm(lstm_state.h) if self.normalize else lstm_state.h]
 
         return tf.concat(ncs + nhs, axis=1)
 

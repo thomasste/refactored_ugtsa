@@ -10,6 +10,7 @@ model_builder = BasicModelBuilder(
     payoff_size=2,
     player_count=2,
     worker_count=5,
+    normalize=True,
     statistic_filter_shapes=[(2, 2, 16), (2, 2, 32)],
     statistic_window_shapes=[(1, 2, 2, 1), (1, 2, 2, 1)],
     statistic_hidden_output_sizes=[25, 25, 25],

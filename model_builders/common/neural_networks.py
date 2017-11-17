@@ -43,26 +43,14 @@ def batch_normalization_layer(training, signal):
 def layer_normalization_layer(signal):
     return layer_norm(signal)
 
-
-# def dense_neural_network(
-#         rng, training, keep_prob, output_sizes, signal):
-#     for idx, output_size in enumerate(output_sizes):
-#         with tf.variable_scope('dense_layer_{}'.format(idx)):
-#             signal = dense_layer(output_size, signal)
-#             signal = bias_layer(signal)
-#             signal = activation_layer(signal)
-#             signal = dropout_layer(rng, training, keep_prob, signal)
-#             print(signal.get_shape())
-#     return signal
-
-
-def dense_neural_network_with_layer_norm(
-        rng, training, keep_prob, output_sizes, signal):
+def dense_neural_network(
+        rng, training, keep_prob, output_sizes, signal, normalize):
     for idx, output_size in enumerate(output_sizes):
         with tf.variable_scope('dense_layer_{}'.format(idx)):
             signal = dense_layer(output_size, signal)
             signal = bias_layer(signal)
-            signal = layer_normalization_layer(signal)
+            if normalize:
+                signal = layer_normalization_layer(signal)
             signal = activation_layer(signal)
             signal = dropout_layer(rng, training, keep_prob, signal)
             print(signal.get_shape())
@@ -86,13 +74,14 @@ def max_pool_layer(signal, window_shape):
 
 
 def convolutional_neural_network(
-        training, filter_shapes, window_shapes, signal):
+        training, filter_shapes, window_shapes, signal, normalize):
     for idx, (filter_shape, window_shape) in enumerate(
             zip(filter_shapes, window_shapes)):
         with tf.variable_scope('convolutional_layer_{}'.format(idx)):
             signal = convolutional_layer(signal, filter_shape)
             signal = activation_layer(signal)
-            signal = batch_normalization_layer(training, signal)
+            if normalize:
+                signal = batch_normalization_layer(training, signal)
             print(signal.get_shape())
             signal = max_pool_layer(signal, window_shape)
             print(signal.get_shape())
