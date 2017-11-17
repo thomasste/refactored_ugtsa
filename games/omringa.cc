@@ -12,6 +12,7 @@ OmringaGameState::Move OmringaGameState::GetMove(int i) {
     Move move;
     move.state = state;
     move.player = player;
+    move.passes = passes;
 
     if (state == State::BET) {
         move.value = MIN_BET + i;
@@ -20,15 +21,20 @@ OmringaGameState::Move OmringaGameState::GetMove(int i) {
         move.value = i;
         move.index = -1;
     } else {
-        move.position = empty_positions[i];
-        move.index = i;
+        if (i < empty_positions.size()) {
+            move.position = empty_positions[i];
+            move.index = i;
+            move.pass = false;
+        } else {
+            move.pass = true;
+        }
     }
 
     return move;
 }
 
 OmringaGameState::OmringaGameState(unsigned seed)
-        : GameState(seed, 2, 0), state(State::BET), bets{-1, -1}, board(Eigen::MatrixXf::Zero(7, 7)) {
+        : GameState(seed, 2, 0), state(State::BET), bets{-1, -1}, passes(0), board(Eigen::MatrixXf::Zero(7, 7)) {
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE; j++) {
             empty_positions.push_back({i, j});
@@ -42,7 +48,8 @@ int OmringaGameState::MoveCount() {
     } else if (state == State::NATURE) {
         return 2;
     } else {
-        return empty_positions.size();
+        if (passes == 2) return 0;
+        else return empty_positions.size() + 1;
     }
 }
 
@@ -67,10 +74,16 @@ void OmringaGameState::ApplyMove(int i) {
         player = move.value;
         chosen_player = move.value;
     } else {
-        std::swap(empty_positions[move.index], empty_positions.back());
-        empty_positions.pop_back();
-        board(move.position.y, move.position.x) = move.player + 1;
-        player = move.player ^ 1;
+        if (move.pass) {
+            player = move.player ^ 1;
+            passes += 1;
+        } else {
+            std::swap(empty_positions[move.index], empty_positions.back());
+            empty_positions.pop_back();
+            board(move.position.y, move.position.x) = move.player + 1;
+            player = move.player ^ 1;
+            passes = 0;
+        }
     }
 }
 
@@ -80,19 +93,22 @@ void OmringaGameState::UndoMove() {
 
     state = move.state;
     player = move.player;
+    passes = move.passes;
     if (move.state == State::BET) {
         bets[move.player] = -1;
     } else if (move.state == State::NATURE) {
         chosen_player = -1;
     } else {
-        empty_positions.push_back(move.position);
-        std::swap(empty_positions[move.index], empty_positions.back());
-        board(move.position.y, move.position.x) = 0;
+        if (!move.pass) {
+            empty_positions.push_back(move.position);
+            std::swap(empty_positions[move.index], empty_positions.back());
+            board(move.position.y, move.position.x) = 0;
+        }
     }
 }
 
 bool OmringaGameState::IsFinal() {
-    return empty_positions.empty();
+    return MoveCount() == 0;
 }
 
 Eigen::MatrixXf OmringaGameState::Board() {
@@ -100,8 +116,8 @@ Eigen::MatrixXf OmringaGameState::Board() {
 }
 
 Eigen::VectorXf OmringaGameState::Info() {
-    Eigen::VectorXf result(2);
-    result << (float) bets[0], (float) bets[1];
+    Eigen::VectorXf result(3);
+    result << (float) bets[0], (float) bets[1], (float) passes;
     return result;
 }
 

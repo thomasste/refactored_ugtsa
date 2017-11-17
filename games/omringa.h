@@ -26,13 +26,17 @@ private:
     struct Move {
         State state;
         int player;
+        int passes;
+
         Position position;
         int value;
         int index;
+        bool pass;
     };
 
     State state;
     int bets[2];
+    int passes;
     int chosen_player;
     Eigen::MatrixXf board;
     std::vector<Position> empty_positions;
