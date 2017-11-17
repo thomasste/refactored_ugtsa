@@ -11,7 +11,31 @@ using namespace ugtsa::algorithms;
 using namespace ugtsa::common;
 using namespace ugtsa::games;
 
+#define ROUNDS 7
+
+bool is_ugtsa_better_in_one_round(TensorflowWrapper *tensorflow_wrapper, int ugtsa_player, int ucb_strength, int ugtsa_strength, bool use_heavy_playouts);
+
 bool is_ugtsa_better(TensorflowWrapper *tensorflow_wrapper, int ugtsa_player, int ucb_strength, int ugtsa_strength, bool use_heavy_playouts) {
+    int wins = 0;
+    int losses = 0;
+
+    for (int i = 0; i < ROUNDS; i++) {
+        if (is_ugtsa_better_in_one_round(tensorflow_wrapper, ugtsa_player, ucb_strength, ugtsa_strength, use_heavy_playouts)) {
+            wins += 1;
+        } else {
+            losses += 1;
+        }
+
+        if (wins > ROUNDS / 2) {
+            return true;
+        }
+        if (losses > ROUNDS / 2) {
+            return false;
+        }
+    }
+}
+
+bool is_ugtsa_better_in_one_round(TensorflowWrapper *tensorflow_wrapper, int ugtsa_player, int ucb_strength, int ugtsa_strength, bool use_heavy_playouts) {
     auto generator = std::default_random_engine(time(0));
     auto game_state = OmringaGameState(time(0));
 
